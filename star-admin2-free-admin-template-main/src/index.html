@@ -476,7 +476,7 @@
             </a>
             <div class="collapse" id="user">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../pages/user/list.html">Danh sách Người dùng</a></li>
+                <li class="nav-item"> <a class="nav-link" onclick="showContent('users')" >Danh sách Người dùng</a></li>
               </ul>
             </div>
           </li>
@@ -523,9 +523,9 @@
       </nav>
       
       <!-- partial -->
-      <div class="container-scroller">
-        <div class="main-panel">
-            <div class="content-wrapper">
+      <div class="container-scroller" >
+        <div class="main-panel" id="page-content">
+            <div class="content-wrapper" >
                 <h1 class="my-4">Movie in Theater</h1>
                 <div class="row" id="movie-container">
                     <!-- Nội dung sẽ được thêm vào bằng JavaScript -->
@@ -562,6 +562,45 @@
   <!-- <script src="../assets/js/Chart.roundedBarCharts.js"></script> -->
   <!-- End custom js for this page-->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+  <!--navigation click -->
+  <script>
+    // Function to show content based on clicked link
+    function showContent(page) {
+        const title = document.getElementById('page-title');
+        const main-panel = document.getElementById('page-content');
+
+        if (page === 'dashboard') {
+            title.innerText = 'Dashboard';
+            content.innerHTML = '<p>Welcome to the dashboard. Here you can view your overall statistics.</p>';
+        } else if (page === 'users') {
+            title.innerText = 'Users';
+            // Load content from QLUser.html
+            fetch('../../star-admin2-free-admin-template-main/src/QLUser.html')
+                .then(response => response.text())
+                .then(data => {
+                    content.innerHTML = data;
+                })
+                .catch(error => {
+                    content.innerHTML = '<p>Error loading Users page.</p>';
+                    console.error('Error loading QLUser.html:', error);
+                });
+        } else if (page === 'settings') {
+            title.innerText = 'Settings';
+            content.innerHTML = '<p>Adjust your settings to configure your application.</p>';
+        } else if (page === 'reports') {
+            title.innerText = 'Reports';
+            content.innerHTML = '<p>View and manage reports for better insights.</p>';
+        } else if (page === 'logout') {
+            title.innerText = 'Logout';
+            content.innerHTML = '<p>You have been logged out successfully.</p>';
+        }
+    }
+</script>
+
+
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
         const movieContainer = document.getElementById('movie-container');
