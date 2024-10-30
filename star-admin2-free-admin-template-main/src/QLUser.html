@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách người dùng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 30;
+            background-color: #f0f0f0;
+        }
+
+        .user-list-container {
+            width: 80%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .user-item {
+            padding: 16px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .add-user-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        .edit-btn {
+            background-color: #FFA500;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="user-list-container" id="userList">
+    <h2>Danh sách người dùng</h2>
+    <!-- Danh sách người dùng sẽ được thêm ở đây bằng JavaScript -->
+</div>
+
+<!-- <button class="add-user-btn" onclick="addUser()">Thêm Người Dùng</button> -->
+
+<script>
+    const API_URL = 'https://be-movie-sooty.vercel.app/user/getAll';
+
+    // Hàm gọi API lấy danh sách người dùng
+    async function fetchUsers() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            displayUsers(data);
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách người dùng:", error);
+        }
+    }
+
+    // Hàm hiển thị danh sách người dùng
+    function displayUsers(users) {
+        const userListContainer = document.getElementById("userList");
+        
+        // Xóa nội dung cũ nếu có
+        userListContainer.innerHTML = "";
+
+        // Duyệt qua từng người dùng và tạo phần tử HTML
+        users.forEach((user) => {
+            const userItem = document.createElement("div");
+            userItem.classList.add("user-item");
+
+            const userName = document.createElement("div");
+            userName.classList.add("user-name");
+            userName.textContent = user.name;
+
+            const userEmail = document.createElement("div");
+            userEmail.classList.add("user-email");
+            userEmail.textContent = user.email;
+
+            // Phần tử chứa các nút
+            const buttons = document.createElement("div");
+            buttons.classList.add("buttons");
+
+            // Nút Sửa
+            const editBtn = document.createElement("button");
+            editBtn.classList.add("edit-btn");
+            editBtn.textContent = "Sửa";
+            editBtn.onclick = () => editUser(user.id);
+
+            // Nút Xóa
+            const deleteBtn = document.createElement("button");
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.textContent = "Xóa";
+            deleteBtn.onclick = () => deleteUser(user.id);
+
+            buttons.appendChild(editBtn);
+            buttons.appendChild(deleteBtn);
+
+            userItem.appendChild(userName);
+            userItem.appendChild(userEmail);
+            userItem.appendChild(buttons);
+
+            userListContainer.appendChild(userItem);
+        });
+    }
+
+    // Hàm thêm người dùng
+    async function addUser() {
+        const name = prompt("Nhập tên người dùng:");
+        const email = prompt("Nhập email người dùng:");
+        
+        if (name && email) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+                
+                if (response.ok) {
+                    fetchUsers(); // Cập nhật danh sách sau khi thêm thành công
+                } else {
+                    alert("Lỗi khi thêm người dùng.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi thêm người dùng:", error);
+            }
+        } else {
+            alert("Vui lòng nhập đầy đủ tên và email!");
+        }
+    }
+
+    // Hàm xóa người dùng
+    async function deleteUser(id) {
+        if (confirm("Bạn có chắc chắn muốn xóa người dùng này không?")) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    fetchUsers(); // Cập nhật danh sách sau khi xóa thành công
+                } else {
+                    alert("Lỗi khi xóa người dùng.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi xóa người dùng:", error);
+            }
+        }
+    }
+
+    // Hàm sửa thông tin người dùng
+    async function editUser(id) {
+        const newName = prompt("Nhập tên mới:");
+        const newEmail = prompt("Nhập email mới:");
+        
+        if (newName && newEmail) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName, email: newEmail })
+                });
+                
+                if (response.ok) {
+                    fetchUsers(); // Cập nhật danh sách sau khi sửa thành công
+                } else {
+                    alert("Lỗi khi sửa người dùng.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi sửa người dùng:", error);
+            }
+        } else {
+            alert("Vui lòng nhập đầy đủ tên và email!");
+        }
+    }
+
+    // Lấy danh sách người dùng khi tải trang
+    fetchUsers();
+</script>
+
+</body>
+</html>
