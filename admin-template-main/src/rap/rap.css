@@ -1,0 +1,83 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    margin: 0;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+}
+
+/* Kiểu dáng chính của danh sách */
+#cinemaList {
+    max-width: 600px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.cinema-item {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    padding: 15px 20px;
+    transition: transform 0.2s;
+}
+
+.cinema-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Thông tin rạp phim */
+.cinema-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cinema-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.cinema-address {
+    font-size: 14px;
+    color: #777;
+}
+
+/* Nút bấm */
+.cinema-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.cinema-buttons button {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cinema-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.cinema-buttons .delete-btn {
+    background-color: #dc3545;
+}
+
+.cinema-buttons .delete-btn:hover {
+    background-color: #c82333;
+}

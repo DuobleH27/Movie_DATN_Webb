@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Rạp Phim</title>
+    <style>
+        /* Đặt nền và căn chỉnh chính */
+        body {
+            font-family: Arial, sans-serif;
+            display: contents;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            margin: 0;
+            align-items: center;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* Kiểu dáng chính của danh sách */
+        #cinemaList {
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 20px;
+            margin-left: 300px;
+        }
+
+        .cinema-item {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            transition: transform 0.2s;
+        }
+
+        .cinema-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Thông tin rạp phim */
+        .cinema-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .cinema-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .cinema-address {
+            font-size: 14px;
+            color: #777;
+        }
+
+        /* Nút bấm */
+        .cinema-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cinema-buttons button {
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #ffffff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cinema-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .cinema-buttons .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .cinema-buttons .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Danh sách Rạp Phim</h2>
+    <div id="cinemaList">
+        <!-- Danh sách sẽ được hiển thị ở đây -->
+    </div>
+
+    <script>
+        // Dữ liệu mẫu với thông tin địa chỉ
+        const cinemas = [
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 1, name: 'Rạp phim A', address: '123 Đường A, Quận 1' },
+            { id: 2, name: 'Rạp phim B', address: '456 Đường B, Quận 2' },
+            { id: 3, name: 'Rạp phim C', address: '789 Đường C, Quận 3' }
+        ];
+
+        // Hàm hiển thị danh sách rạp phim
+        function displayCinemaList() {
+            const cinemaListDiv = document.getElementById('cinemaList');
+            cinemaListDiv.innerHTML = ''; // Xóa nội dung hiện tại
+
+            cinemas.forEach((cinema, index) => {
+                // Tạo một thẻ div cho mỗi rạp phim
+                const cinemaItem = document.createElement('div');
+                cinemaItem.className = 'cinema-item';
+                cinemaItem.innerHTML = `
+                    <div class="cinema-details">
+                        <div>
+                            <span class="cinema-name">${cinema.name}</span><br>
+                            <span class="cinema-address">${cinema.address}</span>
+                        </div>
+                        <div class="cinema-buttons">
+                            <button onclick="editCinema(${index})">Sửa</button>
+                            <button class="delete-btn" onclick="deleteCinema(${index})">Xóa</button>
+                        </div>
+                    </div>
+                `;
+                cinemaListDiv.appendChild(cinemaItem);
+            });
+        }
+
+        // Hàm xóa rạp phim
+        function deleteCinema(index) {
+            cinemas.splice(index, 1); // Xóa rạp phim khỏi mảng
+            displayCinemaList(); // Cập nhật lại danh sách
+        }
+
+        // Hàm sửa tên và địa chỉ rạp phim
+        function editCinema(index) {
+            const newName = prompt('Nhập tên mới cho rạp phim:', cinemas[index].name);
+            const newAddress = prompt('Nhập địa chỉ mới cho rạp phim:', cinemas[index].address);
+            if (newName && newAddress) {
+                cinemas[index].name = newName; // Cập nhật tên rạp phim
+                cinemas[index].address = newAddress; // Cập nhật địa chỉ rạp phim
+                displayCinemaList(); // Cập nhật lại danh sách
+            }
+        }
+
+        // Hiển thị danh sách khi trang được tải
+        displayCinemaList();
+    </script>
+
+</body>
+</html>
