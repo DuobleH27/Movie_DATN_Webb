@@ -16,8 +16,8 @@
             background-color: #f0f0f0;
         }
         .container {
-            width: 90%;
-            max-width: 600px;
+            width: 100%;
+          
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 20px;
@@ -104,6 +104,44 @@
             color: #666666;
             font-weight: bold;
         }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+        .modal-content button:hover {
+            background-color: #45A049;
+        }
     </style>
 </head>
 <body>
@@ -113,19 +151,32 @@
     
     <!-- Header cho tên và địa chỉ -->
 
+
     <ul id="cinemaList" class="cinema-list">
         <!-- Danh sách rạp chiếu phim sẽ được hiển thị tại đây -->
     </ul>
 
     <!-- Nút Thêm Rạp Mới -->
-    <button class="btn btn-add" onclick="addCinema()">Thêm Rạp Mới</button>
+    <button class="btn btn-add" onclick="openAddCinemaModal()">Thêm Rạp Mới</button>
+</div>
+
+<!-- Hộp thoại thêm rạp mới -->
+<div id="addCinemaModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Thêm Rạp Mới</h3>
+        <input type="text" id="cinemaName" placeholder="Tên Rạp">
+        <input type="text" id="cinemaAddress" placeholder="Địa Chỉ">
+        <select id="cinemaTypeSelect">
+            <!-- Danh sách loại rạp sẽ được điền tại đây -->
+        </select>
+        <button onclick="addCinema()">Xác Nhận</button>
+    </div>
 </div>
 
 <script>
-    // URL của API (thay thế bằng URL thực tế của bạn)
     const apiUrl = 'http://be-movie-sooty.vercel.app/cinema/getAll';
+    const cinemaTypeUrl = 'http://be-movie-sooty.vercel.app/brand/getAll';
 
-    // Hàm gọi API và hiển thị danh sách rạp chiếu phim
     async function fetchCinemas() {
         try {
             const response = await fetch(apiUrl);
@@ -136,16 +187,14 @@
         }
     }
 
-    // Hàm hiển thị danh sách rạp chiếu phim
     function displayCinemas(cinemas) {
         const cinemaList = document.getElementById('cinemaList');
-        cinemaList.innerHTML = ''; // Xóa nội dung hiện tại
+        cinemaList.innerHTML = '';
 
         cinemas.forEach(cinema => {
             const cinemaItem = document.createElement('li');
             cinemaItem.className = 'cinema-item';
 
-            // Tạo div chứa thông tin chi tiết rạp
             const cinemaDetails = document.createElement('div');
             cinemaDetails.className = 'cinema-details';
             cinemaDetails.innerHTML = `
@@ -153,90 +202,88 @@
                 <div class="cinema-address">${cinema.address}</div>
             `;
 
-            // Tạo div chứa các nút thao tác
             const cinemaButtons = document.createElement('div');
             cinemaButtons.className = 'cinema-buttons';
 
-            // Nút Sửa
             const editButton = document.createElement('button');
             editButton.className = 'btn btn-edit';
             editButton.textContent = 'Sửa';
             editButton.onclick = () => editCinema(cinema.id, cinema.name, cinema.address);
 
-            // Nút Xóa
             const deleteButton = document.createElement('button');
             deleteButton.className = 'btn btn-delete';
             deleteButton.textContent = 'Xóa';
             deleteButton.onclick = () => deleteCinema(cinema.id);
 
-            // Thêm nút vào cinemaButtons
             cinemaButtons.appendChild(editButton);
             cinemaButtons.appendChild(deleteButton);
 
-            // Thêm chi tiết và nút vào cinemaItem
             cinemaItem.appendChild(cinemaDetails);
             cinemaItem.appendChild(cinemaButtons);
             cinemaList.appendChild(cinemaItem);
         });
     }
 
-    // Hàm xử lý nút Sửa
-    function editCinema(id, currentName, currentAddress) {
-        const newName = prompt('Nhập tên mới cho rạp phim:', currentName);
-        const newAddress = prompt('Nhập địa chỉ mới cho rạp phim:', currentAddress);
-        
-        if (newName && newAddress) {
-            fetch(`${apiUrl}/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newName, address: newAddress })
-            })
-            .then(response => response.json())
-            .then(updatedCinema => {
-                console.log('Rạp đã được cập nhật:', updatedCinema);
-                fetchCinemas();
-            })
-            .catch(error => console.error('Lỗi khi cập nhật rạp:', error));
+    async function openAddCinemaModal() {
+        const modal = document.getElementById('addCinemaModal');
+        const cinemaTypeSelect = document.getElementById('cinemaTypeSelect');
+
+        // Lấy danh sách loại rạp từ API và thêm vào dropdown
+        try {
+            const response = await fetch(cinemaTypeUrl);
+            const cinemaTypes = await response.json();
+            cinemaTypeSelect.innerHTML = ''; // Xóa danh sách cũ
+
+            cinemaTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type._id;
+                option.textContent = type.name;
+                cinemaTypeSelect.appendChild(option);
+
+            });
+
+            modal.style.display = 'flex'; // Hiển thị hộp thoại
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách loại rạp:', error);
+            alert('Không thể lấy danh sách loại rạp.');
         }
     }
 
-    // Hàm xử lý nút Xóa
-    function deleteCinema(id) {
-        if (confirm('Bạn có chắc chắn muốn xóa rạp này?')) {
-            fetch(`${apiUrl}/${id}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log('Rạp đã được xóa:', result);
-                fetchCinemas();
-            })
-            .catch(error => console.error('Lỗi khi xóa rạp:', error));
+    async function addCinema() {
+        const name = document.getElementById('cinemaName').value;
+        const address = document.getElementById('cinemaAddress').value;
+        const brandId = document.getElementById('cinemaTypeSelect').value;
+      
+        if (!name || !address) {
+            alert('Vui lòng nhập đủ tên và địa chỉ.');
+            return;
         }
-    }
 
-    // Hàm thêm rạp mới
-    function addCinema() {
-        const newName = prompt('Nhập tên cho rạp phim mới:');
-        const newAddress = prompt('Nhập địa chỉ cho rạp phim mới:');
-        const newbrandId = prompt('Nhập ID loại rạp phim mới:');
-
-        if (newName && newAddress && brandId) {
-            fetch('http://be-movie-sooty.vercel.app/cinema/add', {
+        try {
+            const response = await fetch('http://be-movie-sooty.vercel.app/cinema/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newName, address: newAddress, brandId: newbrandId })
-            })
-            .then(response => response.json())
-            .then(newCinema => {
-                console.log('Rạp mới đã được thêm:', newCinema);
-                fetchCinemas();
-            })
-            .catch(error => console.error('Lỗi khi thêm rạp mới:', error));
+                body: JSON.stringify({ name, address, brandId })
+            });
+            const newCinema = await response.json();
+            console.log('Rạp mới đã được thêm:', newCinema);
+
+            document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
+            fetchCinemas(); // Cập nhật danh sách rạp
+        } catch (error) {
+            // console.error('Lỗi khi thêm rạp mới:', error);
+            alert('thêm mơi thatat bai')
         }
     }
 
-    // Gọi hàm fetchCinemas khi trang được tải
+    // Đóng modal khi click bên ngoài nội dung
+    window.onclick = function(event) {
+        const modal = document.getElementById('addCinemaModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', fetchCinemas);
 </script>
 

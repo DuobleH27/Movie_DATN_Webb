@@ -61,7 +61,18 @@
     .sub-menu .nav-link {
       cursor: pointer;
     }
+    .nav-link .active- {
+            display: block;
+        }
+    .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
   </style>
+  
 </head>
 
 <body class="with-welcome-text">
@@ -458,9 +469,9 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="../../star-admin2-free-admin-template-main/src/index.html">
+            <a class="nav-link" onclick="openTab(event, 'tab_Dashbroad')">
               <i class="mdi mdi-grid-large menu-icon"></i>
-              <span class="menu-title">Dashboard</span>
+              <span class="menu-title" >Dashboard</span>
             </a>
           </li>
           <li class="nav-item nav-category">Quản lý Rạp</li>
@@ -472,7 +483,7 @@
             </a>
             <div class="collapse" id="theater">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../src/DSRap.html">Danh sách Rạp</a></li>
+                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_Cinema')" >Danh sách Rạp</a></li>
               </ul>
             </div>
           </li>
@@ -485,7 +496,7 @@
             </a>
             <div class="collapse" id="user">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="showUserList('users')">Danh sách Người dùng</a></li>
+                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_User')">Danh sách Người dùng</a></li>
               </ul>
             </div>
           </li>
@@ -538,15 +549,21 @@
         <div class="main-panel" id="page-content">
           <div class="content-wrapper">
             <h1 id="tab-title"></h1>
-            <div class="row" id="movie-container">
-              <!-- Nội dung sẽ được thêm vào bằng JavaScript -->
+            <div class="tab-content">
+              <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
             </div>
-            <div class="user-list-container" id="userList">
-              <!-- Danh sách người dùng sẽ được thêm ở đây bằng JavaScript -->
+            <div id="tab_Dashbroad" class="tab-content">
+              <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
             </div>
-            <div class="user-list-container" id="RapList">
-              <!-- Danh sách người dùng sẽ được thêm ở đây bằng JavaScript -->
+
+            <div id="tab_User" class="tab-content">
+              <iframe src="../src/QLUser.html" width="100%" height="600px" frameborder="0"></iframe>
             </div>
+
+            <div id="tab_Cinema" class="tab-content">
+              <iframe src="../src/Cinema.html" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+
           </div>
         </div>
 
@@ -586,98 +603,72 @@
 
 
     <!--navigation click -->
-    <script>
-      let userData = null;
-      let movieData = null;
-      let DSRapData = null;
-
-      const userBtn = document.querySelector("#user");
-      const movieContainer = document.querySelector('#movie-container');
-      const movieList = document.querySelector('#movieList')
-      const userListContainer = document.querySelector("#userList");
-      const tabTitle = document.querySelector("#tab-title");
-      const rapBtn = document.querySelector("#theater")
-      const rapListContainer = document.querySelector("#RapList")
-
-      function removeLastScreen() {
-        movieContainer.replaceChildren();
-        userListContainer.replaceChildren();
-      }
-
-      // Function to show content based on clicked link
-      async function showUserList(page) {
-        removeLastScreen();
-
-        if (!userData) {
-          userData = await fetchUsers();
-        }
-        tabTitle.textContent = 'Danh sách người dùng';
-        displayUsers(userData, userListContainer);
-      }
-      async function showRapList(page) {
-        removeLastScreen();
-
-        if (!DSRapData) {
-          DSRapData = await displayCinemaList();
-        }
-        tabTitle.textContent = 'Danh sách Rap';
-        displayUsers(DSRapData,rapListContainer);
-      }
-      async function showMovie() {
-         removeLastScreen();
-        const response = await fetch('EditMove.html');
-        const data = await response.text(); // Chuyển phản hồi thành văn bản
-        content.innerHTML = data;
-        tabTitle.textContent = 'Danh sách Phim';
-   
-}
-      async function showMovieList() {
-        removeLastScreen();
-
-        if (!movieData) {
-          movieData = await getMovies();
+    <script> 
+      function openTab(evt, tabName) {
+        // Lấy tất cả các phần tử với class="tab-content" và ẩn chúng đi
+        var tabContent = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabContent.length; i++) {
+            tabContent[i].style.display = "none";
         }
 
-        tabTitle.textContent = 'Movie in Theater';
-        movieData.forEach((movie) => {
-          movieContainer.insertAdjacentHTML('beforeend', `
-                      <div class="col-md-4">
-                          <div class="card movie-card">
-                              <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="card-img-top movie-img" alt="${movie.name}">
-                              <div class="card-body">
-                                  <h5 class="movie-title">${movie.name}</h5>
-                                  <p class="movie-description">${movie.description || 'N/A'}</p>
-                                  <p><strong>Duration:</strong> ${movie.duration}</p>
-                                  <p><strong>Release Date:</strong> ${new Date(movie.release_date).toLocaleDateString()}</p>
-                                  <p><strong>Rating:</strong> ${movie.rating || 'N/A'}</p>
+        // Lấy tất cả các phần tử với class="tab-link" và bỏ class "active"
+        var tabLinks = document.getElementsByClassName("nav-link");
+        for (var i = 0; i < tabLinks.length; i++) {
+            tabLinks[i].classList.remove("active");
+        }
+      // async function showMovieList() {
+      //   removeLastScreen();
+
+      //   if (!movieData) {
+      //     movieData = await getMovies();
+      //   }
+
+      //   tabTitle.textContent = 'Movie in Theater';
+      //   movieData.forEach((movie) => {
+      //     movieContainer.insertAdjacentHTML('beforeend', `
+      //                 <div class="col-md-4">
+      //                     <div class="card movie-card">
+      //                         <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="card-img-top movie-img" alt="${movie.name}">
+      //                         <div class="card-body">
+      //                             <h5 class="movie-title">${movie.name}</h5>
+      //                             <p class="movie-description">${movie.description || 'N/A'}</p>
+      //                             <p><strong>Duration:</strong> ${movie.duration}</p>
+      //                             <p><strong>Release Date:</strong> ${new Date(movie.release_date).toLocaleDateString()}</p>
+      //                             <p><strong>Rating:</strong> ${movie.rating || 'N/A'}</p>
                                   
-                              </div>
-                          </div>
-                      </div>
-                  `);
-        });
+      //                         </div>
+      //                     </div>
+      //                 </div>
+      //             `);
+      //   });
 
-      }
+      // }
 
-      async function getMovies() {
-        const response = await fetch('https://be-movie-sooty.vercel.app/movie/getAll', {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        const data = await response.json();
-        return data;
-      }
+      // async function getMovies() {
+      //   const response = await fetch('https://be-movie-sooty.vercel.app/movie/getAll', {
+      //     headers: {
+      //       "Authorization": `Bearer ${localStorage.getItem('token')}`
+      //     }
+      //   })
+      //   const data = await response.json();
+      //   return data;
+      // }
 
 
-      (async () => {
-        try {
-          await showMovieList()
-        } catch (error) {
-          console.error("Fetch error:", error);
-        }
-      })();
-      
+      // (async () => {
+      //   try {
+      //     await showMovieList()
+      //   } catch (error) {
+      //     console.error("Fetch error:", error);
+      //   }
+      // })();
+     
+
+        // Hiển thị tab hiện tại, và thêm class "active" vào nút đã bấm
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+    }
+
 
       // document.addEventListener("DOMContentLoaded", function () {
 
