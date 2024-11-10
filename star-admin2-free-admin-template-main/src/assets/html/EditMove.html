@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Phim</title>
+    <title>Quản Lý Thể Loại Phim</title>
 
-    <!-- Thư viện cần thiết -->
+    <!-- Include necessary libraries -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/redux/dist/redux.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@reduxjs/toolkit/dist/redux-toolkit.umd.min.js"></script>
 
     <style>
+        /* Styling */
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
@@ -35,7 +37,7 @@
             margin-bottom: 20px;
         }
 
-        .movie-item {
+        .genre-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -45,23 +47,18 @@
             margin-bottom: 10px;
         }
 
-        .movie-details {
+        .genre-details {
             flex: 1;
             margin-left: 15px;
         }
 
-        .movie-details span {
-            display: block;
-            margin: 3px 0;
-        }
-
-        .movie-controls {
+        .genre-controls {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
         }
 
-        .movie-controls button {
+        .genre-controls button {
             margin-top: 5px;
             padding: 5px 10px;
             background-color: #007bff;
@@ -71,11 +68,11 @@
             cursor: pointer;
         }
 
-        .movie-controls button:hover {
+        .genre-controls button:hover {
             background-color: #0056b3;
         }
 
-        .add-movie-btn {
+        .add-genre-btn {
             width: 100%;
             padding: 10px;
             background-color: #28a745;
@@ -86,7 +83,7 @@
             margin-top: 10px;
         }
 
-        .add-movie-btn:hover {
+        .add-genre-btn:hover {
             background-color: #218838;
         }
 
@@ -104,12 +101,13 @@
 
         .modal-content {
             background-color: white;
-            padding: 50px;
+            padding: 30px;
             border-radius: 8px;
             width: 340px;
         }
 
-        .modal-content input {
+        .modal-content input,
+        .modal-content textarea {
             width: 100%;
             margin-bottom: 10px;
             padding: 8px;
@@ -117,8 +115,6 @@
 
         .modal-content button {
             width: 48%;
-            align-items: center;
-            margin-left: 10%;
             padding: 10px;
             background-color: #007bff;
             color: white;
@@ -138,27 +134,37 @@
         .cancel-btn:hover {
             background-color: #c82333;
         }
+
+        /* Notification styling */
+        #notification {
+            display: none;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>Quản Lý Phim</h1>
-        <button class="add-movie-btn" id="open-modal-btn">Thêm Phim</button>
-        <div id="movie-list"></div>
+        <h1>Quản Lý Thể Loại Phim</h1>
+        <button class="add-genre-btn" id="open-genre-modal-btn">Thêm Thể Loại</button>
+        <div id="genre-list"></div>
     </div>
 
-    <div class="modal" id="add-movie-modal">
+    <!-- Notification element -->
+    <div id="notification">Cập nhật thể loại thành công!</div>
+
+    <div class="modal" id="add-genre-modal">
         <div class="modal-content">
-            <h2>Thêm Phim Mới</h2>
-            <input type="text" id="movie-name" placeholder="Tên phim" />
-            <input type="text" id="movie-release" placeholder="Ngày phát hành (YYYY-MM-DD)" />
-            <input type="text" id="movie-duration" placeholder="Thời lượng (HH:mm:ss)" />
-            <input type="number" id="movie-rating" placeholder="Điểm đánh giá" />
-            <textarea id="movie-description" placeholder="Mô tả phim"></textarea>
-            <input type="text" id="movie-image" placeholder="URL ảnh phim" />
-            <input type="text" id="movie-trailer" placeholder="URL trailer" />
+            <h2 id="modal-title">Thêm Thể Loại Mới</h2>
+            <input type="text" id="genre-name" placeholder="Tên thể loại" />
+            <textarea id="genre-description" placeholder="Mô tả thể loại"></textarea>
             <div style="display: flex; justify-content: space-between;">
-                <button id="save-movie-btn">Lưu Phim</button>
+                <button id="save-genre-btn">Lưu Thể Loại</button>
                 <button class="cancel-btn" id="cancel-btn">Hủy</button>
             </div>
         </div>
@@ -167,156 +173,167 @@
     <script type="module">
         const { createSlice, configureStore } = window.RTK;
 
-        const moviesSlice = createSlice({
-            name: 'movies',
+        const genresSlice = createSlice({
+            name: 'genres',
             initialState: {
                 status: 'idle',
-                movies: [],
+                genres: [],
                 error: null,
             },
             reducers: {
                 setLoading: (state) => {
                     state.status = 'loading';
                 },
-                setMovies: (state, action) => {
+                setGenres: (state, action) => {
                     state.status = 'succeeded';
-                    state.movies = action.payload;
+                    state.genres = action.payload;
                 },
                 setError: (state, action) => {
                     state.status = 'failed';
                     state.error = action.payload;
                 },
-                addMovie: (state, action) => {
-                    state.movies.push(action.payload);
+                addGenre: (state, action) => {
+                    state.genres.push(action.payload);
                 },
+                updateGenre: (state, action) => {
+                    const index = state.genres.findIndex((genre) => genre._id === action.payload._id);
+                    if (index !== -1) {
+                        state.genres[index] = action.payload;
+                    }
+                }
             },
         });
 
-        const { setLoading, setMovies, setError, addMovie } = moviesSlice.actions;
+        const { setLoading, setGenres, setError, addGenre, updateGenre } = genresSlice.actions;
 
         const store = configureStore({
             reducer: {
-                movies: moviesSlice.reducer,
+                genres: genresSlice.reducer,
             },
         });
 
-        const fetchMovies = async () => {
+        const fetchGenres = async () => {
             store.dispatch(setLoading());
             try {
-                const response = await axios.get('https://be-movie-sooty.vercel.app/movie/getAll');
-                store.dispatch(setMovies(response.data));
+                const response = await axios.get('http://be-movie-sooty.vercel.app/genre/getAll');
+                store.dispatch(setGenres(response.data));
             } catch (error) {
                 store.dispatch(setError(error.message));
             }
         };
 
-        let editingMovieId = null;
+        let editingGenreId = null;
 
-        const openModal = (movie = null) => {
-    document.getElementById('add-movie-modal').style.display = 'flex';
+        const showNotification = (message) => {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.style.display = 'block';
 
-    if (movie) {
-        document.getElementById('movie-name').value = movie.name;
-        document.getElementById('movie-release').value = movie.release_date;
-        document.getElementById('movie-duration').value = movie.duration;
-        document.getElementById('movie-rating').value = movie.rating;
-        document.getElementById('movie-description').value = movie.description;
-        document.getElementById('movie-image').value = movie.images[0];
-        document.getElementById('movie-trailer').value = movie.trailer;
-        editingMovieId = movie._id;
-        console.log(`Đang chỉnh sửa phim với ID: ${editingMovieId}`); // Kiểm tra ID
-    } else {
-        editingMovieId = null;
-    }
-};
-
-        const closeModal = () => {
-            document.getElementById('add-movie-modal').style.display = 'none';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         };
 
-        document.getElementById('open-modal-btn').addEventListener('click', () => openModal());
+        const openModal = (genre = null) => {
+            document.getElementById('add-genre-modal').style.display = 'flex';
+            if (genre) {
+                document.getElementById('modal-title').innerText = 'Chỉnh Sửa Thể Loại';
+                document.getElementById('genre-name').value = genre.name;
+                document.getElementById('genre-description').value = genre.description;
+                editingGenreId = genre._id;
+            } else {
+                document.getElementById('modal-title').innerText = 'Thêm Thể Loại Mới';
+                document.getElementById('genre-name').value = '';
+                document.getElementById('genre-description').value = '';
+                editingGenreId = null;
+            }
+        };
+
+        const closeModal = () => {
+            document.getElementById('add-genre-modal').style.display = 'none';
+        };
+
+        document.getElementById('open-genre-modal-btn').addEventListener('click', () => openModal());
         document.getElementById('cancel-btn').addEventListener('click', closeModal);
 
-        document.getElementById('save-movie-btn').addEventListener('click', async () => {
-            const movie = {
-                name: document.getElementById('movie-name').value,
-                release_date: document.getElementById('movie-release').value,
-                duration: document.getElementById('movie-duration').value,
-                rating: parseFloat(document.getElementById('movie-rating').value),
-                description: document.getElementById('movie-description').value,
-                images: [document.getElementById('movie-image').value],
-                trailer: document.getElementById('movie-trailer').value,
+        document.getElementById('save-genre-btn').addEventListener('click', async () => {
+            const genre = {
+                name: document.getElementById('genre-name').value,
+                description: document.getElementById('genre-description').value,
             };
 
-            if (editingMovieId) {
-    console.log(`POST URL: https://be-movie-sooty.vercel.app/movie/update`);
-    console.log('Data:', movie);
-
-    // Sử dụng POST để cập nhật thay vì PUT
-    await axios.post('https://be-movie-sooty.vercel.app/movie/update', {
-        ...movie,
-        _id: editingMovieId // Đảm bảo truyền ID vào body
-    });
-} else {
-    await axios.post('https://be-movie-sooty.vercel.app/movie/add', movie);
-}
-            closeModal();
-            fetchMovies();
-        });
-
-        store.subscribe(() => {
-    const state = store.getState();
-    const movieList = document.getElementById('movie-list');
-    movieList.innerHTML = '';
-
-    state.movies.movies.forEach((movie) => {
-        const movieItem = document.createElement('div');
-        movieItem.className = 'movie-item';
-        movieItem.innerHTML = `
-            <img src="${movie.images[0]}" alt="${movie.name}" width="100" height="150" />
-            <div class="movie-details">
-                <span><strong>${movie.name}</strong></span>
-                <span>Thời lượng: ${movie.duration}</span>
-                <span>Ngày phát hành: ${new Date(movie.release_date).toLocaleDateString()}</span>
-                <span>Điểm đánh giá: ${movie.rating}</span>
-            </div>
-            <div class="movie-controls">
-                <button class="edit-btn">Sửa</button>
-                <button class="delete-btn">Xóa phim</button>
-            </div>
-        `;
-
-        // Gán sự kiện cho nút "Sửa"
-        movieItem.querySelector('.edit-btn').addEventListener('click', () => openModal(movie));
-
-        // Gán sự kiện cho nút "Xóa phim"
-        movieItem.querySelector('.delete-btn').addEventListener('click', async () => {
-            const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa phim này không?`);
-            if (!confirmDelete) return;
-
             try {
-                // Gọi API xóa phim bằng phương thức POST với _id trong body
-                const response = await axios.post(`https://be-movie-sooty.vercel.app/movie/delete`, {
-                    _id: movie._id // Đảm bảo rằng `movie._id` tồn tại và chứa giá trị đúng
-                });
-                
-                alert(response.data.message || 'Phim đã được xóa thành công!');
-                
-                // Xóa phần tử khỏi giao diện ngay lập tức
-                movieItem.remove();
+                if (editingGenreId) {
+                    // Update genre
+                    const response = await axios.post('https://be-movie-sooty.vercel.app/genre/update', {
+                        _id: editingGenreId,
+                        ...genre,
+                    });
+                    store.dispatch(updateGenre(response.data));
+                    alert("Cập nhật thể loại thành công!");
+                } else {
+                    // Add new genre
+                    const response = await axios.post('https://be-movie-sooty.vercel.app/genre/add', genre);
+                    store.dispatch(addGenre(response.data));
+                    alert("Thêm thể loại thành công!");
+                }
+                closeModal();
+
+                // Reload the page to show updated data
+                window.location.reload();
             } catch (error) {
-                alert(`Lỗi khi xóa phim: ${error.message}`);
+                alert(`Lỗi khi ${editingGenreId ? "cập nhật" : "thêm"} thể loại: ${error.message}`);
             }
         });
 
-        movieList.appendChild(movieItem);
-    });
-});
 
-// Gọi API để lấy danh sách phim khi trang được load
-fetchMovies();
+        store.subscribe(() => {
+            const state = store.getState();
+            const genreList = document.getElementById('genre-list');
+            genreList.innerHTML = '';
 
+            state.genres.genres.forEach((genre) => {
+                const genreItem = document.createElement('div');
+                genreItem.className = 'genre-item';
+                genreItem.innerHTML = `
+                    <div class="genre-details">
+                        <span><strong>${genre.name}</strong></span>
+                        <span>${genre.description}</span>
+                    </div>
+                    <div class="genre-controls">
+                        <button class="edit-btn">Sửa</button>
+                        <button class="delete-btn">Xóa thể loại</button>
+                    </div>
+                `;
 
+                genreItem.querySelector('.edit-btn').addEventListener('click', () => openModal(genre));
+
+                genreItem.querySelector('.delete-btn').addEventListener('click', async () => {
+                    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa thể loại này không?`);
+                    if (!confirmDelete) return;
+
+                    try {
+                        // Send request to update the status of the genre
+                        const response = await axios.post('https://be-movie-sooty.vercel.app/genre/delete', {
+                            _id: genre._id,
+                            status: "true" // Set status to inactive instead of deleting
+                        });
+
+                        alert(response.data.message || 'Thể loại đã được cập nhật trạng thái thành công!');
+
+                        // Optionally, remove the item from the UI or reload the page
+                        window.location.reload();
+                    } catch (error) {
+                        alert(`Lỗi khi cập nhật trạng thái thể loại: ${error.message}`);
+                    }
+                });
+
+                genreList.appendChild(genreItem);
+            });
+        });
+
+        fetchGenres();
     </script>
 </body>
+
 </html>
