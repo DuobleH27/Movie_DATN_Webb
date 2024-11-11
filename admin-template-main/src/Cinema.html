@@ -265,11 +265,10 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, address, brandId })
             });
-            const newCinema = await response.json();
-            console.log('Rạp mới đã được thêm:', newCinema);
-
+            const newCinema = await response.json(); 
             document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
             fetchCinemas(); // Cập nhật danh sách rạp
+
         } catch (error) {
             // console.error('Lỗi khi thêm rạp mới:', error);
             alert('thêm mơi thatat bai')

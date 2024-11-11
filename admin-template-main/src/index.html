@@ -509,7 +509,7 @@
             </a>
             <div class="collapse" id="movie">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="/admin-template-main/src/movie/EditMove.html">Danh sách Phim</a></li>
+                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Movie')" >Danh sách Phim</a></li>
               </ul>
             </div>
           </li>
@@ -522,7 +522,7 @@
             </a>
             <div class="collapse" id="brand">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../pages/brand/list.html">Danh sách Thương hiệu</a></li>
+                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_Brand')">Danh sách Thương hiệu</a></li>
               </ul>
             </div>
           </li>
@@ -562,6 +562,12 @@
 
             <div id="tab_Cinema" class="tab-content">
               <iframe src="../src/Cinema.html" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+            <div id="tab_Movie" class="tab-content">
+              <iframe src="../src/movie/EditMove.html" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+            <div id="tab_Brand" class="tab-content">
+              <iframe src="../src/Brand.html" width="100%" height="600px" frameborder="0"></iframe>
             </div>
 
           </div>

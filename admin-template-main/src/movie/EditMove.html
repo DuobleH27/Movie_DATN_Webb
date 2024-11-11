@@ -22,8 +22,8 @@
         }
 
         .container {
-            width: 80%;
-            max-width: 600px;
+            width: 100%;
+            max-width: 800px;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -265,43 +265,10 @@
         });
 
         store.subscribe(() => {
-            const state = store.getState();
-            const movieList = document.getElementById('movie-list');
-            movieList.innerHTML = '';
-            state.movies.movies.forEach((movie) => {
-                const movieItem = document.createElement('div');
-                movieItem.className = 'movie-item';
-                movieItem.innerHTML = `
-                    <img src="${movie.images[0]}" alt="${movie.name}" width="100" height="150" />
-                    <div class="movie-details">
-                       
-                        <span><strong>${movie.name}</strong></span>
-                        <span>Thời lượng: ${movie.duration}</span>
-                        <span>Ngày phát hành: ${new Date(movie.release_date).toLocaleDateString()}</span>
-                        <span>Điểm đánh giá: ${movie.rating}</span>
-                    </div>
-                    <div class="movie-controls">
-                        <button class="edit-btn">Sửa</button>
-                        <button class="delete-btn">Xóa</button>
-                    </div>
-                `;
-                // Gán sự kiện cho nút "Sửa"
-                movieItem.querySelector('.edit-btn').addEventListener('click', () => openModal(movie));
-                // Gán sự kiện cho nút "Xóa"
-                movieItem.querySelector('.delete-btn').addEventListener('click', async () => {
-    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa phim ?`);
-    if (!confirmDelete) return;
-    try {
-        await axios.get(`https://be-movie-sooty.vercel.app/movie/delete?_id=${movie.id}`);
-        alert('Phim đã được xóa thành công!');
-        movieItem.remove(); // Xóa phần tử khỏi DOM ngay lập tức
-    } catch (error) {
-        alert(`Lỗi khi xóa phim: ${error.message}`);
-    }
-});
     const state = store.getState();
     const movieList = document.getElementById('movie-list');
     movieList.innerHTML = '';
+
     state.movies.movies.forEach((movie) => {
         const movieItem = document.createElement('div');
         movieItem.className = 'movie-item';
@@ -319,14 +286,14 @@
             </div>
         `;
 
-                movieList.appendChild(movieItem);
-            });
         // Gán sự kiện cho nút "Sửa"
         movieItem.querySelector('.edit-btn').addEventListener('click', () => openModal(movie));
+
         // Gán sự kiện cho nút "Xóa phim"
         movieItem.querySelector('.delete-btn').addEventListener('click', async () => {
             const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa phim này không?`);
             if (!confirmDelete) return;
+
             try {
                 // Gọi API xóa phim bằng phương thức POST với _id trong body
                 const response = await axios.post(`https://be-movie-sooty.vercel.app/movie/delete`, {
@@ -342,13 +309,14 @@
             }
         });
 
-        // Gọi API để lấy danh sách phim khi trang được load
-        fetchMovies();
         movieList.appendChild(movieItem);
     });
 });
+
 // Gọi API để lấy danh sách phim khi trang được load
 fetchMovies();
+
+
     </script>
 </body>
 </html>
