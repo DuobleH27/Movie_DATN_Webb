@@ -143,6 +143,8 @@
             background-color: #45A049;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 </head>
 <body>
 
@@ -208,12 +210,12 @@
             const editButton = document.createElement('button');
             editButton.className = 'btn btn-edit';
             editButton.textContent = 'Sửa';
-            editButton.onclick = () => editCinema(cinema.id, cinema.name, cinema.address);
+            editButton.onclick = () => editCinema(cinema._id, cinema.name, cinema.address);
 
             const deleteButton = document.createElement('button');
             deleteButton.className = 'btn btn-delete';
             deleteButton.textContent = 'Xóa';
-            deleteButton.onclick = () => deleteCinema(cinema.id);
+            deleteButton.onclick = () => deleteCinema(cinema._id);
 
             cinemaButtons.appendChild(editButton);
             cinemaButtons.appendChild(deleteButton);
@@ -248,32 +250,61 @@
             alert('Không thể lấy danh sách loại rạp.');
         }
     }
-
+    // thêm rạp
     async function addCinema() {
-        const name = document.getElementById('cinemaName').value;
-        const address = document.getElementById('cinemaAddress').value;
-        const brandId = document.getElementById('cinemaTypeSelect').value;
-      
-        if (!name || !address) {
-            alert('Vui lòng nhập đủ tên và địa chỉ.');
-            return;
-        }
-
-        try {
-            const response = await fetch('http://be-movie-sooty.vercel.app/cinema/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, address, brandId })
-            });
-            const newCinema = await response.json(); 
-            document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
-            fetchCinemas(); // Cập nhật danh sách rạp
-
-        } catch (error) {
-            // console.error('Lỗi khi thêm rạp mới:', error);
-            alert('thêm mơi thatat bai')
-        }
+    const name = document.getElementById('cinemaName').value;
+    const address = document.getElementById('cinemaAddress').value;
+    const brandId = document.getElementById('cinemaTypeSelect').value;
+  
+    if (!name || !address) {
+        alert('Vui lòng nhập đủ tên và địa chỉ.');
+        return;
     }
+
+    try {
+        const response = await axios.post('http://be-movie-sooty.vercel.app/cinema/add', {
+            name: name,
+            address: address,
+            brandId: brandId
+        });
+
+        const newCinema = response.data;
+        document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
+        fetchCinemas(); // Cập nhật danh sách rạp
+        console.log(newCinema);
+
+    } catch (error) {
+        console.error('Lỗi khi thêm rạp mới:', error);
+        alert('Thêm mới thất bại');
+    }
+}
+
+    // async function addCinema() {
+    //     const name = document.getElementById('cinemaName').value;
+    //     const address = document.getElementById('cinemaAddress').value;
+    //     const brandId = document.getElementById('cinemaTypeSelect').value;
+      
+    //     if (!name || !address) {
+    //         alert('Vui lòng nhập đủ tên và địa chỉ.');
+    //         return;
+    //     }
+
+    //     try {
+    //         const response = await fetch('http://be-movie-sooty.vercel.app/cinema/add', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ name, address, brandId })
+    //         });
+    //         const newCinema = await response.json(); 
+    //         document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
+    //         fetchCinemas(); // Cập nhật danh sách rạp
+    //         console.log(newCinema);
+
+    //     } catch (error) {
+    //         // console.error('Lỗi khi thêm rạp mới:', error);
+    //         alert('thêm mơi thatat bai')
+    //     }
+    // }
 
     // Đóng modal khi click bên ngoài nội dung
     window.onclick = function(event) {
@@ -282,6 +313,27 @@
             modal.style.display = 'none';
         }
     };
+
+
+    // delete rap
+    async function deleteCinema(cinemaId) {
+    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa rạp chiếu phim này?");
+    if (!confirmDelete) return;
+
+    try {
+        const response = await axios.post(`http://be-movie-sooty.vercel.app/cinema/delete`, { _id: cinemaId });
+
+        if (response.status === 200) {
+            alert("Xóa rạp chiếu phim thành công!");
+            fetchCinemas(); // Gọi lại hàm fetchCinemas để cập nhật danh sách
+        } else {
+            console.error("Lỗi khi xóa rạp chiếu phim:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa rạp chiếu phim:"+ _id, error);
+    }
+}
+
 
     document.addEventListener('DOMContentLoaded', fetchCinemas);
 </script>

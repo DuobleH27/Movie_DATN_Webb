@@ -512,6 +512,16 @@
                 <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Movie')" >Danh sách Phim</a></li>
               </ul>
             </div>
+            <div class="collapse" id="movie">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Gener')" >Thể loại</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="movie">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_MovieFalse')" >Danh sách Phim đã xóa</a></li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item nav-category">Quản lý Thương hiệu</li>
           <li class="nav-item">
@@ -569,7 +579,12 @@
             <div id="tab_Brand" class="tab-content">
               <iframe src="../src/Brand.html" width="100%" height="600px" frameborder="0"></iframe>
             </div>
-
+            <div id="tab_Gener" class="tab-content">
+              <iframe src="../src/movie/gener.html" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
+            <div id="tab_MovieFalse" class="tab-content">
+              <iframe src="../src/movie/ListMoveFalse.html" width="100%" height="600px" frameborder="0"></iframe>
+            </div>
           </div>
         </div>
 
