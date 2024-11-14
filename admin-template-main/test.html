@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Rạp Chiếu Phim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        .cinema-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .cinema-details {
+            flex: 1;
+        }
+        .cinema-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center">Danh sách Rạp Chiếu Phim</h1>
+        <button class="btn btn-primary my-3" onclick="openAddCinemaModal()">Thêm Rạp Chiếu Phim</button>
+        <ul id="cinemaList" class="list-unstyled"></ul>
+    </div>
+
+    <!-- Modal Thêm và Sửa Rạp Chiếu Phim -->
+    <div id="addCinemaModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Thêm Rạp Chiếu Phim</h2>
+            <div class="mb-3">
+                <label for="cinemaName" class="form-label">Tên Rạp</label>
+                <input type="text" id="cinemaName" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="cinemaAddress" class="form-label">Địa Chỉ</label>
+                <input type="text" id="cinemaAddress" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="cinemaTypeSelect" class="form-label">Loại Rạp</label>
+                <select id="cinemaTypeSelect" class="form-select"></select>
+            </div>
+            <button id="modalSaveButton" class="btn btn-success" onclick="saveCinema()">Lưu</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://be-movie-sooty.vercel.app/cinema';
+        const cinemaTypeUrl = 'http://be-movie-sooty.vercel.app/brand/getAll';
+        let editCinemaId = null;
+
+        async function fetchCinemas() {
+            try {
+                const response = await fetch(`${apiUrl}/getAll`);
+                const cinemas = await response.json();
+                displayCinemas(cinemas);
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách rạp chiếu phim:', error);
+            }
+        }
+
+        function displayCinemas(cinemas) {
+            const cinemaList = document.getElementById('cinemaList');
+            cinemaList.innerHTML = '';
+
+            cinemas.forEach(cinema => {
+                const cinemaItem = document.createElement('li');
+                cinemaItem.className = 'cinema-item';
+
+                const cinemaDetails = document.createElement('div');
+                cinemaDetails.className = 'cinema-details';
+                cinemaDetails.innerHTML = `
+                    <div class="cinema-name">${cinema.name}</div>
+                    <div class="cinema-address">${cinema.address}</div>
+                `;
+
+                const cinemaButtons = document.createElement('div');
+                cinemaButtons.className = 'cinema-buttons';
+
+                const editButton = document.createElement('button');
+                editButton.className = 'btn btn-warning';
+                editButton.textContent = 'Sửa';
+                editButton.onclick = () => editCinema(cinema);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'btn btn-danger';
+                deleteButton.textContent = 'Xóa';
+                deleteButton.onclick = () => deleteCinema(cinema._id);
+
+                cinemaButtons.appendChild(editButton);
+                cinemaButtons.appendChild(deleteButton);
+
+                cinemaItem.appendChild(cinemaDetails);
+                cinemaItem.appendChild(cinemaButtons);
+                cinemaList.appendChild(cinemaItem);
+            });
+        }
+
+        async function openAddCinemaModal() {
+            editCinemaId = null;
+            document.getElementById('modalTitle').textContent = 'Thêm Rạp Chiếu Phim';
+            document.getElementById('cinemaName').value = '';
+            document.getElementById('cinemaAddress').value = '';
+            loadCinemaTypes();
+            document.getElementById('addCinemaModal').style.display = 'flex';
+        }
+
+        async function loadCinemaTypes() {
+            try {
+                const response = await fetch(cinemaTypeUrl);
+                const cinemaTypes = await response.json();
+                const cinemaTypeSelect = document.getElementById('cinemaTypeSelect');
+                cinemaTypeSelect.innerHTML = '';
+
+                cinemaTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type._id;
+                    option.textContent = type.name;
+                    cinemaTypeSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách loại rạp:', error);
+                alert('Không thể lấy danh sách loại rạp.');
+            }
+        }
+
+        async function saveCinema() {
+            const name = document.getElementById('cinemaName').value;
+            const address = document.getElementById('cinemaAddress').value;
+            const brandId = document.getElementById('cinemaTypeSelect').value;
+
+            if (!name || !address) {
+                alert('Vui lòng nhập đủ tên và địa chỉ.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/${editCinemaId ? 'update' : 'add'}`, {
+                    method: editCinemaId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _id: editCinemaId, name, address, brandId })
+                });
+
+                const result = await response.json();
+                console.log(editCinemaId ? 'Rạp đã được cập nhật:' : 'Rạp mới đã được thêm:', result);
+
+                closeModal();
+                fetchCinemas();
+            } catch (error) {
+                console.error(editCinemaId ? 'Lỗi khi cập nhật rạp:' : 'Lỗi khi thêm rạp mới:', error);
+                alert(editCinemaId ? 'Cập nhật thất bại' : 'Thêm mới thất bại');
+            }
+        }
+
+        function editCinema(cinema) {
+            editCinemaId = cinema._id;
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa Rạp Chiếu Phim';
+            document.getElementById('cinemaName').value = cinema.name;
+            document.getElementById('cinemaAddress').value = cinema.address;
+            loadCinemaTypes().then(() => {
+                document.getElementById('cinemaTypeSelect').value = cinema.brandId;
+            });
+            document.getElementById('addCinemaModal').style.display = 'flex';
+        }
+
+        async function deleteCinema(cinema) {
+            if (!confirm('Bạn có chắc chắn muốn xóa rạp này không?')) return;
+
+            try {
+                await fetch(`${apiUrl}/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _id })
+                });
+                alert('Rạp đã được xóa.');
+                fetchCinemas();
+            } catch (error) {
+                console.error('Lỗi khi xóa rạp:', error);
+                alert('Xóa thất bại');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('addCinemaModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('addCinemaModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', fetchCinemas);
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

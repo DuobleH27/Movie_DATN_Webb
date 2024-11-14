@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách người dùng</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .loading {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Danh sách người dùng</h1>
+
+  <div id="loading" class="loading">Đang tải dữ liệu...</div>
+  <div id="error" class="error"></div>
+  
+  <table id="userTable" style="display: none;">
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>Địa chỉ</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody"></tbody>
+  </table>
+
+  <script>
+    // Hàm lấy dữ liệu người dùng từ API
+    async function fetchUsers() {
+      try {
+        const response = await fetch('https://be-movie-sooty.vercel.app/user/getAll');
+        if (!response.ok) {
+          throw new Error('Lỗi khi gọi API');
+        }
+        const users = await response.json();
+        displayUsers(users);
+      } catch (error) {
+        document.getElementById('error').textContent = 'Lỗi: ' + error.message;
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    // Hàm hiển thị dữ liệu người dùng lên bảng
+    function displayUsers(users) {
+      const tableBody = document.getElementById('userTableBody');
+      document.getElementById('userTable').style.display = 'table'; // Hiển thị bảng
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        // Tên người dùng
+        const nameCell = document.createElement('td');
+        nameCell.textContent = user.name;
+        row.appendChild(nameCell);
+        
+        // Email người dùng
+        const emailCell = document.createElement('td');
+        emailCell.textContent = user.email;
+        row.appendChild(emailCell);
+        
+        // Địa chỉ người dùng
+        const addressCell = document.createElement('td');
+        addressCell.textContent = `${user.address}`;
+        row.appendChild(addressCell);
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Gọi hàm fetchUsers khi trang được tải
+    fetchUsers();
+  </script>
+  
+</body>
+</html>
