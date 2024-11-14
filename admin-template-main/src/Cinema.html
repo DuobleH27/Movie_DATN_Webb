@@ -142,6 +142,42 @@
         .modal-content button:hover {
             background-color: #45A049;
         }
+        /* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    text-align: center;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
@@ -173,8 +209,21 @@
         </select>
         <button onclick="addCinema()">Xác Nhận</button>
     </div>
-</div>
+    <!-- Modal -->
 
+
+</div>
+<div id="editCinemaModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Chỉnh sửa thông tin rạp chiếu phim</h2>
+        <label for="cinemaName">Tên rạp:</label>
+        <input type="text" id="cinemaNameu">
+        <label for="cinemaAddress">Địa chỉ:</label>
+        <input type="text" id="cinemaAddressu">
+        <button onclick="saveCinemaChanges()">Lưu thay đổi</button>
+    </div>
+</div>
 <script>
     const apiUrl = 'http://be-movie-sooty.vercel.app/cinema/getAll';
     const cinemaTypeUrl = 'http://be-movie-sooty.vercel.app/brand/getAll';
@@ -262,7 +311,7 @@
     }
 
     try {
-        const response = await axios.post('http://be-movie-sooty.vercel.app/cinema/add', {
+        const response = await axios.post('https://be-movie-sooty.vercel.app/cinema/add', {
             name: name,
             address: address,
             brandId: brandId
@@ -279,32 +328,7 @@
     }
 }
 
-    // async function addCinema() {
-    //     const name = document.getElementById('cinemaName').value;
-    //     const address = document.getElementById('cinemaAddress').value;
-    //     const brandId = document.getElementById('cinemaTypeSelect').value;
-      
-    //     if (!name || !address) {
-    //         alert('Vui lòng nhập đủ tên và địa chỉ.');
-    //         return;
-    //     }
-
-    //     try {
-    //         const response = await fetch('http://be-movie-sooty.vercel.app/cinema/add', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ name, address, brandId })
-    //         });
-    //         const newCinema = await response.json(); 
-    //         document.getElementById('addCinemaModal').style.display = 'none'; // Ẩn hộp thoại
-    //         fetchCinemas(); // Cập nhật danh sách rạp
-    //         console.log(newCinema);
-
-    //     } catch (error) {
-    //         // console.error('Lỗi khi thêm rạp mới:', error);
-    //         alert('thêm mơi thatat bai')
-    //     }
-    // }
+    
 
     // Đóng modal khi click bên ngoài nội dung
     window.onclick = function(event) {
@@ -321,7 +345,7 @@
     if (!confirmDelete) return;
 
     try {
-        const response = await axios.post(`http://be-movie-sooty.vercel.app/cinema/delete`, { _id: cinemaId });
+        const response = await axios.post(`https://be-movie-sooty.vercel.app/cinema/delete`, { _id: cinemaId });
 
         if (response.status === 200) {
             alert("Xóa rạp chiếu phim thành công!");
@@ -333,6 +357,48 @@
         console.error("Lỗi khi xóa rạp chiếu phim:"+ _id, error);
     }
 }
+let editingCinemaId = null; // Biến lưu ID rạp chiếu phim đang chỉnh sửa
+
+function editCinema(cinemaId, currentName, currentAddress) {
+    editingCinemaId = cinemaId; // Lưu lại ID rạp chiếu phim
+    document.getElementById("cinemaName").value = currentName;
+    document.getElementById("cinemaAddress").value = currentAddress;
+    document.getElementById("editCinemaModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("editCinemaModal").style.display = "none";
+}
+
+async function saveCinemaChanges() {
+    const newName = document.getElementById("cinemaNameu").value;
+    const newAddress = document.getElementById("cinemaAddressu").value;
+
+    try {
+        const response = await fetch(`https://be-movie-sooty.vercel.app/cinema/update`, {
+            method: 'POST', // Hoặc 'PUT' nếu API của bạn sử dụng phương thức PUT
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                _id: editingCinemaId,
+                name: newName,
+                address: newAddress
+            })
+        });
+
+        if (response.ok) {
+            alert("Cập nhật thông tin rạp chiếu phim thành công!");
+            closeModal();
+            fetchCinemas(); // Cập nhật lại danh sách rạp chiếu phim sau khi sửa
+        } else {
+            console.error("Lỗi khi cập nhật thông tin rạp chiếu phim:", response.statusText);
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật thông tin rạp chiếu phim:", error);
+    }
+}
+
 
 
     document.addEventListener('DOMContentLoaded', fetchCinemas);
