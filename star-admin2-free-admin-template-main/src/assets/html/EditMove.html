@@ -351,7 +351,7 @@
 
                 movieItem.querySelector('.edit-btn').addEventListener('click', () => openModal(movie));
                 movieItem.querySelector('.delete-btn').addEventListener('click', async () => {
-    const confirmDelete = confirm(`Bạn có chắc chắn muốn thay đổi trạng thái phim này thành "inactive"?`);
+    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa phim?`);
     if (!confirmDelete) return;
 
     try {
@@ -366,7 +366,12 @@
         // Xóa phần tử phim khỏi layout sau khi chuyển trạng thái
         movieItem.remove();
     } catch (error) {
+        if (error.response && error.response.data && error.response.data.message) {
+        alert(`Lỗi khi cập nhật trạng thái phim: ${error.response.data.message}`);
+    } else {
+        // Hiển thị thông điệp mặc định nếu không có thông tin chi tiết
         alert(`Lỗi khi cập nhật trạng thái phim: ${error.message}`);
+    }
     }
 });
 
