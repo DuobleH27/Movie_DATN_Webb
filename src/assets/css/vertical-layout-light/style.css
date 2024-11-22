@@ -32008,7 +32008,10 @@ div.tagsinput span.tag a {
   }
 }
 .auth .brand-logo {
+  display: flex;
   margin-bottom: 2rem;
+  justify-content: center; /* Căn giữa theo chiều ngang */
+  align-items: center; /* Căn giữa theo chiều dọc */
 }
 .auth .brand-logo img {
   width: 90px;

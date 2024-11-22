@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Suất Chiếu Mới</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .add-showtime-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .add-showtime-btn:hover {
+            background-color: #218838;
+        }
+
+        .showtime-item {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .showtime-details span {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .modal-content button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .modal-content button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        .close-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .close-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lọc Suất Chiếu Theo Phim</h1>
+        <button class="add-showtime-btn" id="add-showtime-btn">Thêm Suất Chiếu</button>
+        <select id="movie-filter">
+            <option value="">Tất cả phim</option>
+        </select>
+        <div id="showtime-list"></div>
+    </div>
+
+    <!-- Modal for adding showtime -->
+    <div class="modal" id="add-showtime-modal">
+        <div class="modal-content">
+            <h2>Thêm Suất Chiếu Mới</h2>
+            <form id="add-showtime-form">
+                <label for="movie-id">Chọn phim:</label>
+                <select id="movie-id" required>
+                    <option value="">Chọn phim</option>
+                </select>
+                <label for="room-id">Chọn phòng:</label>
+                <select id="room-id" required>
+                    <option value="">Chọn phòng</option>
+                </select>
+                <label for="start-time">Thời gian bắt đầu:</label>
+                <input type="datetime-local" id="start-time" required>
+                <label for="end-time">Thời gian kết thúc:</label>
+                <input type="datetime-local" id="end-time" required>
+                <label for="day">Ngày:</label>
+                <input type="date" id="day" required>
+                <label for="room-shape">Hình dạng phòng:</label>
+                <input type="text" id="room-shape" placeholder="Hình dạng phòng" required>
+                <button type="submit">Thêm suất chiếu</button>
+                <button type="button" class="close-button" id="close-modal-btn">Đóng</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let movies = [];
+        let rooms = [];
+
+        const fetchMoviesAndRooms = async () => {
+            try {
+                // Fetch movies
+                const movieResponse = await axios.get('https://be-movie-sooty.vercel.app/movie/getAll');
+                movies = movieResponse.data;
+                const movieFilter = document.getElementById('movie-filter');
+                const movieSelect = document.getElementById('movie-id');
+
+                // Populate the movie filter and form dropdown
+                movies.forEach(movie => {
+                    const option = document.createElement('option');
+                    option.value = movie._id;
+                    option.textContent = movie.name;
+                    movieFilter.appendChild(option);
+
+                    const formOption = option.cloneNode(true);
+                    movieSelect.appendChild(formOption);
+                });
+
+                // Fetch rooms
+                const roomResponse = await axios.get('https://be-movie-sooty.vercel.app/room/getAll');
+                rooms = roomResponse.data;
+                const roomSelect = document.getElementById('room-id');
+
+                // Populate the room form dropdown
+                rooms.forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room._id;
+                    option.textContent = room.name;
+                    roomSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách phim và phòng:', error);
+                alert('Lỗi khi lấy danh sách phim và phòng.');
+            }
+        };
+
+        const getMovieNameById = (id) => {
+            const movie = movies.find(movie => movie._id === id);
+            return movie ? movie.name : 'Không rõ';
+        };
+
+        const getRoomNameById = (id) => {
+            const room = rooms.find(room => room._id === id);
+            return room ? room.name : 'Không rõ';
+        };
+
+        const fetchShowtimes = async (movieId = null) => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/showtime/getAll');
+                const showtimes = response.data;
+                const showtimeList = document.getElementById('showtime-list');
+
+                showtimeList.innerHTML = ''; // Clear previous results
+
+                // Filter showtimes based on the selected movie if movieId is provided
+                const filteredShowtimes = movieId 
+                    ? showtimes.filter(showtime => showtime.movieId === movieId) 
+                    : showtimes;
+
+                if (filteredShowtimes.length === 0) {
+                    showtimeList.innerHTML = '<p>Không có suất chiếu nào.</p>';
+                    return;
+                }
+
+                filteredShowtimes.forEach(showtime => {
+                    const showtimeItem = document.createElement('div');
+                    showtimeItem.className = 'showtime-item';
+                    showtimeItem.innerHTML = `
+                        <div class="showtime-details">
+                            
+                            <span><strong>Tên Phim:</strong> ${getMovieNameById(showtime.movieId)}</span>
+                            <span><strong>Tên Phòng:</strong> ${getRoomNameById(showtime.roomId)}</span>
+                            <span><strong>Thời Gian Bắt Đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
+                            <span><strong>Thời Gian Kết Thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
+                            <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
+                            
+                        </div>
+                    `;
+                    showtimeList.appendChild(showtimeItem); 
+                    // <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
+                    // <span><strong>Hình Dạng Phòng:</strong> ${showtime.Room_Shape}</span>
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách suất chiếu:', error);
+                alert('Lỗi khi lấy danh sách suất chiếu.');
+            }
+        };
+
+        document.getElementById('movie-filter').addEventListener('change', (event) => {
+            const selectedMovieId = event.target.value;
+            if (selectedMovieId) {
+                fetchShowtimes(selectedMovieId);
+            } else {
+                fetchShowtimes(); // Get all showtimes if no movie is selected
+            }
+        });
+
+        // Event listeners for opening and closing the modal
+        document.getElementById('add-showtime-btn').addEventListener('click', () => {
+            document.getElementById('add-showtime-modal').style.display = 'flex';
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('add-showtime-modal').style.display = 'none';
+        });
+
+        document.getElementById('add-showtime-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const movieId = document.getElementById('movie-id').value;
+            const roomId = document.getElementById('room-id').value;
+            const startTime = document.getElementById('start-time').value;
+            const endTime = document.getElementById('end-time').value;
+            const day = document.getElementById('day').value;
+            const roomShape = document.getElementById('room-shape').value;
+
+            const newShowtime = {
+                movieId,
+                roomId,
+                startTime: new Date(startTime).toISOString(),
+                endTime: new Date(endTime).toISOString(),
+                day: new Date(day).toISOString(),
+                Room_Shape: roomShape
+            };
+
+            try {
+                await axios.post('https://be-movie-sooty.vercel.app/showtime/add', newShowtime);
+                alert('Thêm suất chiếu thành công!');
+                document.getElementById('add-showtime-form').reset(); // Clear form after submission
+                document.getElementById('add-showtime-modal').style.display = 'none'; // Close modal
+                fetchShowtimes(); // Refresh the showtime list
+            } catch (error) {
+                console.error('Lỗi khi thêm suất chiếu:', error);
+                alert('Lỗi khi thêm suất chiếu.');
+            }
+        });
+        window.onclick = function(event) {
+        const modal = document.getElementById('add-showtime-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+        // Fetch movies, rooms, and showtimes on page load
+        fetchMoviesAndRooms().then(() => {
+            fetchShowtimes();
+        });
+    </script>
+</body>
+</html>

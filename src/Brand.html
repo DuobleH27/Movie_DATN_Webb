@@ -15,6 +15,10 @@
       text-align: center;
       color: #333;
     }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
     .theater-type-list, .theater-list, .room-list {
       list-style: none;
       padding: 0;
@@ -41,17 +45,14 @@
   </style>
 </head>
 <body>
-
   <h1>Danh sách loại rạp</h1>
 
   <!-- Danh sách các loại rạp -->
   <ul id="theaterTypeList" class="theater-type-list"></ul>
 
+  <h2>Danh sách rạp</h2>
   <!-- Danh sách rạp sẽ hiển thị khi chọn loại rạp -->
   <ul id="theaterList" class="theater-list"></ul>
-
-  <!-- Danh sách phòng chiếu sẽ hiển thị khi chọn rạp -->
-  <ul id="roomList" class="room-list"></ul>
 
   <script>
     // Hàm lấy dữ liệu loại rạp từ API
@@ -81,13 +82,13 @@
     }
 
     // Hàm lấy danh sách phòng chiếu theo rạp từ API
-    async function fetchRoomsByTheater(theaterId) {
+    async function fetchRoomsByTheater(theaterId, theaterElement) {
       try {
-        const response = await fetch(`http://be-movie-sooty.vercel.app/room/getByCinema?cinema_id=${theaterId}`);
+        const response = await fetch(`http://be-movie-sooty.vercel.app/room/getByCinema?cinemaId=${theaterId}`);
         if (!response.ok) throw new Error('Lỗi khi lấy danh sách phòng chiếu');
         
         const rooms = await response.json();
-        displayRooms(rooms);
+        displayRooms(rooms, theaterElement);
       } catch (error) {
         alert(error.message);
       }
@@ -110,9 +111,7 @@
     // Hiển thị danh sách rạp
     function displayTheaters(theaters) {
       const theaterList = document.getElementById('theaterList');
-      const roomList = document.getElementById('roomList');
       theaterList.innerHTML = ''; // Xóa danh sách rạp cũ
-      roomList.innerHTML = '';    // Xóa danh sách phòng chiếu cũ
 
       theaters.forEach(theater => {
         const theaterItem = document.createElement('li');
@@ -120,25 +119,37 @@
 
         const theaterName = document.createElement('div');
         theaterName.textContent = theater.name;
-        theaterName.className = 'theater-type-name';
+        theaterName.className = 'theater-name';
 
         const theaterAddress = document.createElement('div');
         theaterAddress.textContent = `Địa chỉ: ${theater.address}`;
         theaterAddress.className = 'theater-item-details';
 
+        // Danh sách phòng chiếu sẽ được hiển thị tại đây
+        const roomList = document.createElement('ul');
+        roomList.className = 'room-list';
+        roomList.style.display = 'none'; // Ẩn mặc định
+
+        // Sự kiện khi nhấn vào rạp
+        theaterName.onclick = () => {
+          if (roomList.style.display === 'none') {
+            fetchRoomsByTheater(theater._id, roomList); // Lấy danh sách phòng
+            roomList.style.display = 'block'; // Hiển thị danh sách phòng
+          } else {
+            roomList.style.display = 'none'; // Ẩn nếu đã hiển thị
+          }
+        };
+
         theaterItem.appendChild(theaterName);
         theaterItem.appendChild(theaterAddress);
-        
-        // Thêm sự kiện để lấy danh sách phòng chiếu khi nhấn vào rạp
-        theaterItem.onclick = () => fetchRoomsByTheater(theater.id);
+        theaterItem.appendChild(roomList); // Gắn danh sách phòng vào rạp
 
         theaterList.appendChild(theaterItem);
       });
     }
 
     // Hiển thị danh sách phòng chiếu
-    function displayRooms(rooms) {
-      const roomList = document.getElementById('roomList');
+    function displayRooms(rooms, roomList) {
       roomList.innerHTML = ''; // Xóa danh sách phòng chiếu cũ
 
       if (rooms.length === 0) {
@@ -156,7 +167,7 @@
           roomName.className = 'room-name';
 
           const roomCapacity = document.createElement('div');
-          roomCapacity.textContent = `Sức chứa: ${room.capacity} chỗ`;
+          roomCapacity.textContent = `Sức chứa: ${room.totalSeat} chỗ`;
           roomCapacity.className = 'room-details';
 
           roomItem.appendChild(roomName);
@@ -169,6 +180,6 @@
     // Gọi hàm để hiển thị danh sách loại rạp khi trang tải
     fetchTheaterTypes();
   </script>
-
 </body>
+
 </html>

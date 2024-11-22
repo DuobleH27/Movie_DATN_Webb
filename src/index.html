@@ -102,12 +102,15 @@
       <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
         <div class="me-3">
           <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-bs-toggle="minimize">
-            <span class="icon-menu"></span>
+            <!-- <span class="icon-menu"></span> -->
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="index.html">
-            <img src="assets/images/logo.svg" alt="logo" />
+          <a class="navbar-brand brand-logo" href="index.html" style="display: flex;  justify-content: center;
+  align-items: center; ">
+            <img src="assets/image/logo.png" alt="logo" />
+            <h3 style="margin-right: 5px;">Movie</h3>
+            <h2 style="font-weight: bold; color: #FF515A;">GO</h2>
           </a>
           <a class="navbar-brand brand-logo-mini" href="index.html">
             <img src="assets/images/logo-mini.svg" alt="logo" />
@@ -117,8 +120,7 @@
       <div class="navbar-menu-wrapper d-flex align-items-top">
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Good Morning, <span class="text-black fw-bold">John Doe</span></h1>
-            <h3 class="welcome-sub-text">Your performance summary this week </h3>
+            <img src="assets/images/logo.svg" alt="logo" />
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
@@ -486,6 +488,11 @@
                 <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_Cinema')" >Danh sách Rạp</a></li>
               </ul>
             </div>
+            <div class="collapse" id="theater">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_ListCinemaDeleta')" >Danh sách Rạp đã xóa </a></li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item nav-category">Quản lý Người dùng</li>
           <li class="nav-item">
@@ -546,7 +553,7 @@
             </a>
             <div class="collapse" id="showtime">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../pages/showtime/list.html">Danh sách Lịch chiếu</a>
+                <li class="nav-item"> <a class="nav-link"  onclick="openTab(event, 'tab_Listshowtimemovie')">Danh sách Lịch chiếu</a>
                 </li>
               </ul>
             </div>
@@ -556,36 +563,44 @@
 
       <!-- partial -->
       <div class="container-scroller">
+        <h1 id="tab-title"></h1>
+        <div class="tab-content">
+          <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_Dashbroad" class="tab-content">
+          <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+
+        <div id="tab_User" class="tab-content">
+          <iframe src="../src/QLUser.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+
+        <div id="tab_Cinema" class="tab-content">
+          <iframe src="../src/Cinema.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_Movie" class="tab-content">
+          <iframe src="../src/movie/EditMove.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_Brand" class="tab-content">
+          <iframe src="../src/Brand.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_Gener" class="tab-content">
+          <iframe src="../src/movie/gener.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_MovieFalse" class="tab-content">
+          <iframe src="../src/movie/ListMoveFalse.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_ListCinemaDeleta" class="tab-content">
+          <iframe src="../src/ListCinemaDelete.html" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+        <div id="tab_Listshowtimemovie" class="tab-content">
+          <iframe src="../src/movie/showtime.html" width="100%" height="800px" frameborder="0"></iframe>
+        </div>
+        <div class="content-wrapper">
+      
+        </div>
         <div class="main-panel" id="page-content">
-          <div class="content-wrapper">
-            <h1 id="tab-title"></h1>
-            <div class="tab-content">
-              <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-            <div id="tab_Dashbroad" class="tab-content">
-              <iframe src="../src/Dashbroad.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-
-            <div id="tab_User" class="tab-content">
-              <iframe src="../src/QLUser.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-
-            <div id="tab_Cinema" class="tab-content">
-              <iframe src="../src/Cinema.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-            <div id="tab_Movie" class="tab-content">
-              <iframe src="../src/movie/EditMove.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-            <div id="tab_Brand" class="tab-content">
-              <iframe src="../src/Brand.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-            <div id="tab_Gener" class="tab-content">
-              <iframe src="../src/movie/gener.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-            <div id="tab_MovieFalse" class="tab-content">
-              <iframe src="../src/movie/ListMoveFalse.html" width="100%" height="600px" frameborder="0"></iframe>
-            </div>
-          </div>
+          
         </div>
 
 

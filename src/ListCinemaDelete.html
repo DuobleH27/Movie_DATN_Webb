@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Rạp Đã Xóa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .cinema-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .cinema-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cinema-name {
+            font-weight: bold;
+        }
+
+        .btn-restore {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            background-color: #28a745;
+        }
+
+        .btn-restore:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Danh sách Rạp Đã Xóa</h1>
+
+    <div id="deletedCinemaListContainer">
+        <ul id="deletedCinemaList">
+            <!-- Danh sách các rạp đã xóa sẽ được thêm vào đây bằng JavaScript -->
+        </ul>
+    </div>
+
+    <script>
+        const deletedCinemasApiUrl = 'https://be-movie-sooty.vercel.app/cinema/getDelete'; // Thay bằng URL API lấy danh sách rạp đã xóa
+        const restoreCinemaApiUrl = 'https://be-movie-sooty.vercel.app/cinema/revert';  // Thay bằng URL API để thêm lại rạp
+
+        // Hàm lấy danh sách rạp đã xóa từ API
+        async function fetchDeletedCinemas() {
+            try {
+                const response = await fetch(deletedCinemasApiUrl);
+                const cinemas = await response.json();
+                displayDeletedCinemas(cinemas);
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách rạp đã xóa:', error);
+            }
+        }
+
+        // Hàm hiển thị danh sách rạp đã xóa
+        function displayDeletedCinemas(cinemas) {
+            const deletedCinemaList = document.getElementById('deletedCinemaList');
+            deletedCinemaList.innerHTML = '';
+
+            cinemas.forEach(cinema => {
+                const cinemaItem = document.createElement('li');
+                cinemaItem.className = 'cinema-item';
+
+                const cinemaDetails = document.createElement('div');
+                cinemaDetails.className = 'cinema-details';
+                cinemaDetails.innerHTML = `
+                    <div class="cinema-name">${cinema.name}</div>
+                    <div class="cinema-address">${cinema.address}</div>
+                `;
+
+                const restoreButton = document.createElement('button');
+                restoreButton.className = 'btn-restore';
+                restoreButton.textContent = 'Thêm lại';
+                restoreButton.onclick = () => restoreCinema(cinema._id);
+
+                cinemaItem.appendChild(cinemaDetails);
+                cinemaItem.appendChild(restoreButton);
+                deletedCinemaList.appendChild(cinemaItem);
+            });
+        }
+
+        // Hàm gọi API để thêm lại rạp vào danh sách
+        // async function restoreCinema() {
+        //     try {
+        //         const response = await fetch(`${restoreCinemaApiUrl}`, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({
+        //         _id: cinema._id,
+            
+        //     })
+        //         });
+
+        //         if (response.ok) {
+        //             console.log(`Rạp với ID ${_id} đã được thêm lại.`);
+        //             fetchDeletedCinemas(); // Cập nhật lại danh sách rạp đã xóa
+        //         } else {
+        //             console.error('Lỗi khi thêm lại rạp:'+_id , response.statusText);
+        //         }
+        //     } catch (error) {
+        //         console.error('Lỗi khi thêm lại rạp:'+_id, error);
+        //     }
+        // }
+        // Hàm gọi API để thêm lại rạp vào danh sách bằng axios{ _id: cinemaId }
+async function restoreCinema(id) {
+    try {
+        const response = await axios.post(`${restoreCinemaApiUrl}`,{ _id: id});
+        
+        if (response.status === 200) {
+            console.log(`Rạp với ID ${_id} đã được thêm lại.`);
+            fetchDeletedCinemas(); // Cập nhật lại danh sách rạp đã xóa
+        } else {
+            console.error('Lỗi khi thêm lại rạp:'+id, response.statusText);
+        }
+    } catch (error) {
+        console.error('Lỗi khi thêm lại rạp:'+id, error);
+    }
+}
+   // delete rap
+  
+
+
+        // Gọi hàm để lấy danh sách rạp đã xóa khi tải trang
+        fetchDeletedCinemas();
+    </script>
+</body>
+</html>
