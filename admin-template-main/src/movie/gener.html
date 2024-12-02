@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thể Loại Phim</title>
+
+    <!-- Thư viện cần thiết -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/redux/dist/redux.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@reduxjs/toolkit/dist/redux-toolkit.umd.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .genre-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .genre-details {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .genre-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .genre-controls button {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .genre-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .add-genre-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-genre-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Thể Loại Phim</h1>
+        <button class="add-genre-btn" id="open-genre-modal-btn">Thêm Thể Loại</button>
+        <div id="genre-list"></div>
+    </div>
+
+    <script type="module">
+        const { createSlice, configureStore } = window.RTK;
+
+        const genresSlice = createSlice({
+            name: 'genres',
+            initialState: {
+                status: 'idle',
+                genres: [],
+                error: null,
+            },
+            reducers: {
+                setLoading: (state) => {
+                    state.status = 'loading';
+                },
+                setGenres: (state, action) => {
+                    state.status = 'succeeded';
+                    state.genres = action.payload;
+                },
+                setError: (state, action) => {
+                    state.status = 'failed';
+                    state.error = action.payload;
+                },
+                addGenre: (state, action) => {
+                    state.genres.push(action.payload);
+                },
+            },
+        });
+
+        const { setLoading, setGenres, setError, addGenre } = genresSlice.actions;
+
+        const store = configureStore({
+            reducer: {
+                genres: genresSlice.reducer,
+            },
+        });
+
+        const fetchGenres = async () => {
+            store.dispatch(setLoading());
+            try {
+                const response = await axios.get('http://be-movie-sooty.vercel.app/genre/getAll');
+                store.dispatch(setGenres(response.data));
+            } catch (error) {
+                store.dispatch(setError(error.message));
+            }
+        };
+
+        store.subscribe(() => {
+            const state = store.getState();
+            const genreList = document.getElementById('genre-list');
+            genreList.innerHTML = '';
+
+            state.genres.genres.forEach((genre) => {
+                const genreItem = document.createElement('div');
+                genreItem.className = 'genre-item';
+                genreItem.innerHTML = `
+                    <div class="genre-details">
+                        <span><strong>${genre.name}</strong></span>
+                        <span>${genre.description}</span>
+                    </div>
+                    <div class="genre-controls">
+                        <button class="edit-btn">Sửa</button>
+                        <button class="delete-btn">Xóa thể loại</button>
+                    </div>
+                `;
+
+                // Gán sự kiện cho nút "Sửa"
+                genreItem.querySelector('.edit-btn').addEventListener('click', () => {
+                    alert(`Editing genre: ${genre.name}`);
+                    // Thêm logic chỉnh sửa thể loại tại đây
+                });
+
+                // Gán sự kiện cho nút "Xóa thể loại"
+                genreItem.querySelector('.delete-btn').addEventListener('click', async () => {
+                    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa thể loại này không?`);
+                    if (!confirmDelete) return;
+
+                    try {
+                        // Gọi API xóa thể loại
+                        const response = await axios.post('http://be-movie-sooty.vercel.app/genre/delete', {
+                            _id: genre._id,
+                        });
+                        
+                        alert(response.data.message || 'Thể loại đã được xóa thành công!');
+                        genreItem.remove();
+                    } catch (error) {
+                        alert(`Lỗi khi xóa thể loại: ${error.message}`);
+                    }
+                });
+
+                genreList.appendChild(genreItem);
+            });
+        });
+
+        // Gọi API để lấy danh sách thể loại khi trang được load
+        fetchGenres();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Rạp Chiếu Phim</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 16px;
+        }
+        .cinema-list {
+            list-style: none;
+            padding: 0;
+        }
+        .cinema-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cinema-item:last-child {
+            border-bottom: none;
+        }
+        .cinema-details {
+            flex-grow: 1;
+            margin-right: 20px;
+        }
+        .cinema-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333333;
+        }
+        .cinema-address {
+            font-size: 14px;
+            color: #666666;
+        }
+        .cinema-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-edit {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #45A049;
+        }
+        .btn-delete {
+            background-color: #F44336;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #D32F2F;
+        }
+        .btn-add {
+            background-color: #008CBA;
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .btn-add:hover {
+            background-color: #007BB5;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .header div {
+            font-size: 16px;
+            color: #666666;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Danh Sách Rạp Chiếu Phim</h1>
+    
+    <!-- Header cho tên và địa chỉ -->
+
+    <ul id="cinemaList" class="cinema-list">
+        <!-- Danh sách rạp chiếu phim sẽ được hiển thị tại đây -->
+    </ul>
+
+    <!-- Nút Thêm Rạp Mới -->
+    <button class="btn btn-add" onclick="addCinema()">Thêm Rạp Mới</button>
+</div>
+
+<script>
+    // URL của API (thay thế bằng URL thực tế của bạn)
+    const apiUrl = 'http://be-movie-sooty.vercel.app/cinema/getAll';
+
+    // Hàm gọi API và hiển thị danh sách rạp chiếu phim
+    async function fetchCinemas() {
+        try {
+            const response = await fetch(apiUrl);
+            const cinemas = await response.json();
+            displayCinemas(cinemas);
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách rạp chiếu phim:', error);
+        }
+    }
+
+    // Hàm hiển thị danh sách rạp chiếu phim
+    function displayCinemas(cinemas) {
+        const cinemaList = document.getElementById('cinemaList');
+        cinemaList.innerHTML = ''; // Xóa nội dung hiện tại
+
+        cinemas.forEach(cinema => {
+            const cinemaItem = document.createElement('li');
+            cinemaItem.className = 'cinema-item';
+
+            // Tạo div chứa thông tin chi tiết rạp
+            const cinemaDetails = document.createElement('div');
+            cinemaDetails.className = 'cinema-details';
+            cinemaDetails.innerHTML = `
+                <div class="cinema-name">${cinema.name}</div>
+                <div class="cinema-address">${cinema.address}</div>
+            `;
+
+            // Tạo div chứa các nút thao tác
+            const cinemaButtons = document.createElement('div');
+            cinemaButtons.className = 'cinema-buttons';
+
+            // Nút Sửa
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-edit';
+            editButton.textContent = 'Sửa';
+            editButton.onclick = () => editCinema(cinema.id, cinema.name, cinema.address);
+
+            // Nút Xóa
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-delete';
+            deleteButton.textContent = 'Xóa';
+            deleteButton.onclick = () => deleteCinema(cinema.id);
+
+            // Thêm nút vào cinemaButtons
+            cinemaButtons.appendChild(editButton);
+            cinemaButtons.appendChild(deleteButton);
+
+            // Thêm chi tiết và nút vào cinemaItem
+            cinemaItem.appendChild(cinemaDetails);
+            cinemaItem.appendChild(cinemaButtons);
+            cinemaList.appendChild(cinemaItem);
+        });
+    }
+
+    // Hàm xử lý nút Sửa
+    function editCinema(id, currentName, currentAddress) {
+        const newName = prompt('Nhập tên mới cho rạp phim:', currentName);
+        const newAddress = prompt('Nhập địa chỉ mới cho rạp phim:', currentAddress);
+        
+        if (newName && newAddress) {
+            fetch(`${apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName, address: newAddress })
+            })
+            .then(response => response.json())
+            .then(updatedCinema => {
+                console.log('Rạp đã được cập nhật:', updatedCinema);
+                fetchCinemas();
+            })
+            .catch(error => console.error('Lỗi khi cập nhật rạp:', error));
+        }
+    }
+
+    // Hàm xử lý nút Xóa
+    function deleteCinema(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa rạp này?')) {
+            fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Rạp đã được xóa:', result);
+                fetchCinemas();
+            })
+            .catch(error => console.error('Lỗi khi xóa rạp:', error));
+        }
+    }
+
+    // Hàm thêm rạp mới
+    function addCinema() {
+        const newName = prompt('Nhập tên cho rạp phim mới:');
+        const newAddress = prompt('Nhập địa chỉ cho rạp phim mới:');
+        const newbrandId = prompt('Nhập ID loại rạp phim mới:');
+
+        if (newName && newAddress && brandId) {
+            fetch('http://be-movie-sooty.vercel.app/cinema/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName, address: newAddress, brandId: newbrandId })
+            })
+            .then(response => response.json())
+            .then(newCinema => {
+                console.log('Rạp mới đã được thêm:', newCinema);
+                fetchCinemas();
+            })
+            .catch(error => console.error('Lỗi khi thêm rạp mới:', error));
+        }
+    }
+
+    // Gọi hàm fetchCinemas khi trang được tải
+    document.addEventListener('DOMContentLoaded', fetchCinemas);
+</script>
+
+</body>
+</html>
