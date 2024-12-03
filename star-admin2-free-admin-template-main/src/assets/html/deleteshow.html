@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Thể Loại Đã Xóa</title>
+
+    <!-- Thư viện axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .genre-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .genre-details {
+            flex: 1;
+        }
+
+        .genre-controls {
+            text-align: right;
+        }
+
+        .genre-controls button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .genre-controls button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Danh Sách Thể Loại Đã Xóa</h1>
+        <div id="genre-list"></div>
+    </div>
+
+    <script>
+        // Gọi API để lấy danh sách thể loại đã xóa
+        const fetchDeletedGenres = async () => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/genre/getDelete');
+                const genres = response.data;
+
+                // Kiểm tra nếu không có thể loại nào đã xóa
+                if (genres.length === 0) {
+                    document.getElementById('genre-list').innerHTML = '<p>Không có thể loại nào đã xóa.</p>';
+                    return;
+                }
+
+                // Hiển thị danh sách thể loại đã xóa
+                const genreList = document.getElementById('genre-list');
+                genreList.innerHTML = '';  // Xóa nội dung cũ
+
+                genres.forEach(genre => {
+                    const genreItem = document.createElement('div');
+                    genreItem.classList.add('genre-item');
+                    genreItem.innerHTML = `
+                        <div class="genre-details">
+                            <strong>${genre.name}</strong><br>
+                            <span>${genre.description}</span>
+                        </div>
+                        <div class="genre-controls">
+                            <button class="restore-btn" data-id="${genre._id}">Khôi phục</button>
+                        </div>
+                    `;
+
+                    // Thêm sự kiện khôi phục thể loại
+                    genreItem.querySelector('.restore-btn').addEventListener('click', async (e) => {
+                        const genreId = e.target.getAttribute('data-id');
+                        try {
+                            // Gửi yêu cầu khôi phục thể loại (cập nhật trạng thái thành true)
+                            const restoreResponse = await axios.post('https://be-movie-sooty.vercel.app/genre/revert', { 
+                                _id: genreId,
+                                status: true  // Thay đổi trạng thái thành true
+                            });
+
+                            if (restoreResponse.data.success) {
+                                alert('Thể loại đã được khôi phục!');
+                                genreItem.remove(); 
+                                fetchDeletedGenres(); // Tải lại danh sách thể loại đã xóa
+                            } else {
+                                alert('Thể loại đã được khôi phục!');
+                                genreItem.remove(); 
+                            }
+                        } catch (error) {
+                            alert('Lỗi khi khôi phục thể loại: ' + error.message);
+                        }
+                    });
+
+                    genreList.appendChild(genreItem);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách thể loại đã xóa:', error);
+                document.getElementById('genre-list').innerHTML = '<p>Không thể lấy danh sách thể loại đã xóa.</p>';
+            }
+        };
+
+        // Gọi API khi trang được tải
+        fetchDeletedGenres();
+    </script>
+</body>
+</html>
