@@ -182,6 +182,7 @@
 
             async function fetchTypeSeats(cinemaId) {
                 try {
+                        
                     const response = await axios.get(`http://be-movie-sooty.vercel.app/typeseat/getAll?cinemaId=${cinemaId}`);
                     displayTypeSeats(response.data);
                 } catch (error) {

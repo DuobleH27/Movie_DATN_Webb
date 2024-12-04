@@ -74,7 +74,7 @@
     <script type="module">
         const fetchSeats = async () => {
             try {
-                const response = await axios.get('http://be-movie-sooty.vercel.app/typeseat/getDelete');
+                const response = await axios.get('https://be-movie-sooty.vercel.app/typeseat/getDelete');
                 const seatList = document.getElementById('seat-list');
                 seatList.innerHTML = '';
                 response.data.forEach((seat) => {
@@ -97,10 +97,12 @@
         };
 
         // Attach the function to the global scope
-        window.restoreSeat = async (d) => {
+        window.restoreSeat = async (id) => {
             try {
-                const response = await axios.post('http://be-movie-sooty.vercel.app/typeseat/revert', {
-                    _id: _id
+                console.log(id)
+                const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/revert', {
+                    _id: id
+                    
                 });
                 alert('Loại ghế đã được khôi phục thành công!');
                 fetchSeats(); // Refresh the list after restoring seat
