@@ -61,9 +61,10 @@
     .sub-menu .nav-link {
       cursor: pointer;
     }
-    .nav-link .active- {
-            display: block;
-        }
+    .nav-link.active {
+  background-color: #ddd; /* Đánh dấu tab đang hoạt động */
+}
+
     .tab-content {
             display: none;
             padding: 20px;
@@ -71,13 +72,14 @@
             border: 1px solid #ccc;
             border-top: none;
         }
+
   </style>
   
 </head>
 
 <body class="with-welcome-text">
   <div class="container-scroller">
-    <div class="row p-0 m-0 proBanner" id="proBanner">
+    <!-- <div class="row p-0 m-0 proBanner" id="proBanner">
       <div class="col-md-12 p-0 m-0">
         <div class="card-body card-body-padding px-3 d-flex align-items-center justify-content-between">
           <div class="ps-lg-3">
@@ -96,7 +98,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
       <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
@@ -471,7 +473,7 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" onclick="openTab(event, 'tab_Dashbroad')">
+            <a class="nav-link active" onclick="openTab(event, 'tab_Dashbroad')">
               <i class="mdi mdi-grid-large menu-icon"></i>
               <span class="menu-title" >Dashboard</span>
             </a>
@@ -522,6 +524,11 @@
             <div class="collapse" id="movie">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Gener')" >Thể loại</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="movie">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_deleteshow')" >Thể loại đã xóa</a></li>
               </ul>
             </div>
             <div class="collapse" id="movie">
@@ -596,12 +603,13 @@
         <div id="tab_Listshowtimemovie" class="tab-content">
           <iframe src="../src/movie/showtime.html" width="100%" height="800px" frameborder="0"></iframe>
         </div>
+        <div id="tab_deleteshow" class="tab-content">
+          <iframe src="../src/movie/deleteshow.html" width="100%" height="800px" frameborder="0"></iframe>
+        </div>
         <div class="content-wrapper">
       
         </div>
-        <div class="main-panel" id="page-content">
-          
-        </div>
+    
 
 
 
@@ -652,59 +660,19 @@
         for (var i = 0; i < tabLinks.length; i++) {
             tabLinks[i].classList.remove("active");
         }
-      // async function showMovieList() {
-      //   removeLastScreen();
-
-      //   if (!movieData) {
-      //     movieData = await getMovies();
-      //   }
-
-      //   tabTitle.textContent = 'Movie in Theater';
-      //   movieData.forEach((movie) => {
-      //     movieContainer.insertAdjacentHTML('beforeend', `
-      //                 <div class="col-md-4">
-      //                     <div class="card movie-card">
-      //                         <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="card-img-top movie-img" alt="${movie.name}">
-      //                         <div class="card-body">
-      //                             <h5 class="movie-title">${movie.name}</h5>
-      //                             <p class="movie-description">${movie.description || 'N/A'}</p>
-      //                             <p><strong>Duration:</strong> ${movie.duration}</p>
-      //                             <p><strong>Release Date:</strong> ${new Date(movie.release_date).toLocaleDateString()}</p>
-      //                             <p><strong>Rating:</strong> ${movie.rating || 'N/A'}</p>
-                                  
-      //                         </div>
-      //                     </div>
-      //                 </div>
-      //             `);
-      //   });
-
-      // }
-
-      // async function getMovies() {
-      //   const response = await fetch('https://be-movie-sooty.vercel.app/movie/getAll', {
-      //     headers: {
-      //       "Authorization": `Bearer ${localStorage.getItem('token')}`
-      //     }
-      //   })
-      //   const data = await response.json();
-      //   return data;
-      // }
-
-
-      // (async () => {
-      //   try {
-      //     await showMovieList()
-      //   } catch (error) {
-      //     console.error("Fetch error:", error);
-      //   }
-      // })();
-     
+      
 
         // Hiển thị tab hiện tại, và thêm class "active" vào nút đã bấm
         document.getElementById(tabName).style.display = "block";
         evt.currentTarget.classList.add("active");
     }
-
+    document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("tab_Dashbroad").style.display = "block"; // Đảm bảo Tab 1 luôn hiển thị
+    var defaultTab = document.querySelector(".nav-link.active");
+    if (defaultTab) {
+        defaultTab.classList.add("active");
+    }
+});
 
       // document.addEventListener("DOMContentLoaded", function () {
 

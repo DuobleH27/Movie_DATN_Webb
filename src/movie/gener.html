@@ -84,6 +84,53 @@
         .add-genre-btn:hover {
             background-color: #218838;
         }
+
+        /* Modal style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            padding: 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+
+        .cancel-btn {
+            background-color: #dc3545;
+        }
+
+        .cancel-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -91,6 +138,21 @@
         <h1>Quản Lý Thể Loại Phim</h1>
         <button class="add-genre-btn" id="open-genre-modal-btn">Thêm Thể Loại</button>
         <div id="genre-list"></div>
+    </div>
+
+    <!-- Modal Thêm/Chỉnh sửa Thể Loại -->
+    <div class="modal" id="add-genre-modal">
+        <div class="modal-content">
+            <h2>Thêm Thể Loại Mới</h2>
+            <label for="genre-name">Tên Thể Loại</label>
+            <input type="text" id="genre-name" placeholder="Nhập tên thể loại" />
+            <label for="genre-description">Mô Tả Thể Loại</label>
+            <input type="text" id="genre-description" placeholder="Nhập mô tả thể loại" />
+            <div>
+                <button id="save-genre-btn">Lưu Thể Loại</button>
+                <button id="cancel-genre-btn" class="cancel-btn">Hủy</button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -118,10 +180,16 @@
                 addGenre: (state, action) => {
                     state.genres.push(action.payload);
                 },
+                updateGenre: (state, action) => {
+                    const index = state.genres.findIndex(genre => genre._id === action.payload._id);
+                    if (index !== -1) {
+                        state.genres[index] = action.payload;
+                    }
+                },
             },
         });
 
-        const { setLoading, setGenres, setError, addGenre } = genresSlice.actions;
+        const { setLoading, setGenres, setError, addGenre, updateGenre } = genresSlice.actions;
 
         const store = configureStore({
             reducer: {
@@ -153,30 +221,34 @@
                         <span>${genre.description}</span>
                     </div>
                     <div class="genre-controls">
-                        <button class="edit-btn">Sửa</button>
-                        <button class="delete-btn">Xóa thể loại</button>
+                        <button class="edit-btn" data-id="${genre._id}">Sửa</button>
+                        <button class="delete-btn" data-id="${genre._id}">Xóa thể loại</button>
                     </div>
                 `;
 
-                // Gán sự kiện cho nút "Sửa"
                 genreItem.querySelector('.edit-btn').addEventListener('click', () => {
-                    alert(`Editing genre: ${genre.name}`);
-                    // Thêm logic chỉnh sửa thể loại tại đây
+                    openEditGenreModal(genre);
                 });
 
-                // Gán sự kiện cho nút "Xóa thể loại"
                 genreItem.querySelector('.delete-btn').addEventListener('click', async () => {
                     const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa thể loại này không?`);
                     if (!confirmDelete) return;
 
                     try {
-                        // Gọi API xóa thể loại
-                        const response = await axios.post('http://be-movie-sooty.vercel.app/genre/delete', {
-                            _id: genre._id,
+                        // Gửi yêu cầu API để cập nhật status của thể loại thành false (thay vì xóa hoàn toàn)
+                        const response = await axios.post('https://be-movie-sooty.vercel.app/genre/delete', {
+                            _id: genre._id, // Gửi ID của thể loại cần cập nhật
+                            status: false     // Cập nhật status thành false
                         });
-                        
-                        alert(response.data.message || 'Thể loại đã được xóa thành công!');
-                        genreItem.remove();
+
+                        if (response.data.success) {
+                            alert('Thể loại đã được xóa thành công!');
+                            fetchGenres();
+                            genreItem.remove(); // Xóa thể loại khỏi giao diện
+                            
+                        } else {
+                            alert(`Lỗi khi xóa thể loại: ${response.data.message}`);
+                        }
                     } catch (error) {
                         alert(`Lỗi khi xóa thể loại: ${error.message}`);
                     }
@@ -186,9 +258,69 @@
             });
         });
 
-        // Gọi API để lấy danh sách thể loại khi trang được load
         fetchGenres();
 
+        document.getElementById('open-genre-modal-btn').addEventListener('click', () => {
+            document.getElementById('add-genre-modal').style.display = 'flex';
+            document.getElementById('genre-name').value = '';
+            document.getElementById('genre-description').value = '';
+            document.getElementById('save-genre-btn').onclick = saveNewGenre;
+        });
+
+        document.getElementById('cancel-genre-btn').addEventListener('click', () => {
+            document.getElementById('add-genre-modal').style.display = 'none';
+        });
+
+        function openEditGenreModal(genre) {
+            document.getElementById('add-genre-modal').style.display = 'flex';
+            document.getElementById('genre-name').value = genre.name;
+            document.getElementById('genre-description').value = genre.description;
+            document.getElementById('save-genre-btn').onclick = () => saveUpdatedGenre(genre);
+        }
+
+        async function saveNewGenre() {
+            const genreName = document.getElementById('genre-name').value;
+            const genreDescription = document.getElementById('genre-description').value;
+
+            if (!genreName) {
+                alert('Vui lòng nhập tên thể loại!');
+                return;
+            }
+
+            const genreData = { name: genreName, description: genreDescription };
+
+            try {
+                const response = await axios.post('https://be-movie-sooty.vercel.app/genre/add', genreData);
+                alert('Thể loại đã được thêm thành công!');
+                store.dispatch(addGenre(response.data));
+                fetchGenres();
+                document.getElementById('add-genre-modal').style.display = 'none';
+            } catch (error) {
+                alert(`Lỗi khi thêm thể loại: ${error.message}`);
+            }
+        }
+
+        async function saveUpdatedGenre(genre) {
+            const genreName = document.getElementById('genre-name').value;
+            const genreDescription = document.getElementById('genre-description').value;
+
+            if (!genreName) {
+                alert('Vui lòng nhập tên thể loại!');
+                return;
+            }
+
+            const updatedGenreData = { ...genre, name: genreName, description: genreDescription };
+
+            try {
+                const response = await axios.post('https://be-movie-sooty.vercel.app/genre/update', updatedGenreData);
+                alert('Thể loại đã được cập nhật!');
+                store.dispatch(updateGenre(response.data));
+                fetchGenres();
+                document.getElementById('add-genre-modal').style.display = 'none';
+            } catch (error) {
+                alert(`Lỗi khi cập nhật thể loại: ${error.message}`);
+            }
+        }
     </script>
 </body>
 </html>

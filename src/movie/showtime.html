@@ -17,8 +17,8 @@
         }
 
         .container {
-            width: 90%;
-            max-width: 800px;
+            width: 100%;
+            max-width: 100%;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -253,16 +253,18 @@
                     showtimeItem.className = 'showtime-item';
                     showtimeItem.innerHTML = `
                         <div class="showtime-details">
-                            <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
+                            
                             <span><strong>Tên Phim:</strong> ${getMovieNameById(showtime.movieId)}</span>
                             <span><strong>Tên Phòng:</strong> ${getRoomNameById(showtime.roomId)}</span>
                             <span><strong>Thời Gian Bắt Đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
                             <span><strong>Thời Gian Kết Thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
                             <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
-                            <span><strong>Hình Dạng Phòng:</strong> ${showtime.Room_Shape}</span>
+                            
                         </div>
                     `;
-                    showtimeList.appendChild(showtimeItem);
+                    showtimeList.appendChild(showtimeItem); 
+                    // <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
+                    // <span><strong>Hình Dạng Phòng:</strong> ${showtime.Room_Shape}</span>
                 });
             } catch (error) {
                 console.error('Lỗi khi lấy danh sách suất chiếu:', error);
@@ -318,7 +320,12 @@
                 alert('Lỗi khi thêm suất chiếu.');
             }
         });
-
+        window.onclick = function(event) {
+        const modal = document.getElementById('add-showtime-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
         // Fetch movies, rooms, and showtimes on page load
         fetchMoviesAndRooms().then(() => {
             fetchShowtimes();

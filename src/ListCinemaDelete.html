@@ -99,44 +99,57 @@
         }
 
         // Hàm gọi API để thêm lại rạp vào danh sách
-        // async function restoreCinema() {
-        //     try {
-        //         const response = await fetch(`${restoreCinemaApiUrl}`, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json'
-        //             },
-        //             body: JSON.stringify({
-        //         _id: cinema._id,
-            
-        //     })
-        //         });
+        async function restoreCinema(cinemaId) {
+    // Hiển thị hộp thoại xác nhận
+    const isConfirmed = confirm("Bạn có chắc chắn muốn thêm lại rạp này không?");
+    if (!isConfirmed) {
+        return; // Người dùng bấm Hủy, thoát khỏi hàm
+    }
 
-        //         if (response.ok) {
-        //             console.log(`Rạp với ID ${_id} đã được thêm lại.`);
-        //             fetchDeletedCinemas(); // Cập nhật lại danh sách rạp đã xóa
-        //         } else {
-        //             console.error('Lỗi khi thêm lại rạp:'+_id , response.statusText);
-        //         }
-        //     } catch (error) {
-        //         console.error('Lỗi khi thêm lại rạp:'+_id, error);
-        //     }
-        // }
-        // Hàm gọi API để thêm lại rạp vào danh sách bằng axios{ _id: cinemaId }
-async function restoreCinema(id) {
+    const button = document.querySelector(`button[data-id="${cinemaId}"]`);
+    if (button) button.disabled = true;
+
     try {
-        const response = await axios.post(`${restoreCinemaApiUrl}`,{ _id: id});
-        
-        if (response.status === 200) {
-            console.log(`Rạp với ID ${_id} đã được thêm lại.`);
+        const response = await fetch(`${restoreCinemaApiUrl}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: cinemaId })
+        });
+
+        if (response.ok) {
+            alert("Rạp đã được thêm lại thành công!"); // Thông báo khi thành công
+            console.log(`Rạp với ID ${cinemaId} đã được thêm lại.`);
             fetchDeletedCinemas(); // Cập nhật lại danh sách rạp đã xóa
         } else {
-            console.error('Lỗi khi thêm lại rạp:'+id, response.statusText);
+            alert("Có lỗi xảy ra khi thêm lại rạp."); // Thông báo lỗi
+            console.error(`Lỗi khi thêm lại rạp với ID ${cinemaId}:`, response.statusText);
         }
     } catch (error) {
-        console.error('Lỗi khi thêm lại rạp:'+id, error);
+        alert("Có lỗi xảy ra khi thêm lại rạp."); // Thông báo lỗi
+        console.error(`Lỗi khi thêm lại rạp với ID ${cinemaId}:`, error);
+    } finally {
+        if (button) button.disabled = false; // Bật lại nút
     }
 }
+
+
+        // Hàm gọi API để thêm lại rạp vào danh sách bằng axios{ _id: cinemaId }
+//      async function restoreCinema(_id) {
+//     try {
+//         const response = await axios.post(`${restoreCinemaApiUrl}`,{ _id: _id});
+        
+//         if (response.status === 200) {
+//             console.log(`Rạp với ID ${_id} đã được thêm lại.`);
+//             fetchDeletedCinemas(); // Cập nhật lại danh sách rạp đã xóa
+//         } else {
+//             console.error('Lỗi khi thêm lại rạp:'+_id, response.statusText);
+//         }
+//     } catch (error) {
+//         console.error('Lỗi khi thêm lại rạp:'+_id, error);
+//     }
+// }
    // delete rap
   
 
