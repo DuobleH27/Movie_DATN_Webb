@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Phòng Chiếu</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .room-form, .room-item {
+            margin-bottom: 20px;
+        }
+
+        .room-form input, .room-form select, .room-form button {
+            margin: 5px 0;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .room-form button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .room-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .room-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .room-item .actions button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .room-item .actions .edit-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .room-item .actions .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .room-item .actions button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Phòng Chiếu</h1>
+
+        <!-- Form thêm/sửa phòng -->
+        <div class="room-form">
+            <h3>Thêm Phòng</h3>
+            <input type="text" id="roomName" placeholder="Tên phòng">
+            <input type="text" id="roomShape" placeholder="Hình dạng phòng (VD: TTT/DDD/)">
+            <input type="number" id="totalSeat" placeholder="Tổng số ghế">
+            <select id="cinemaId">
+                <option value="" disabled selected>Chọn rạp</option>
+            </select>
+            <button onclick="addRoom()">Thêm Phòng</button>
+        </div>
+
+        <!-- Danh sách phòng -->
+        <div id="roomList"></div>
+    </div>
+
+    <script>
+        const fetchCinemas = async () => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/cinema/getAll');
+                const cinemaSelect = document.getElementById('cinemaId');
+                response.data.forEach(cinema => {
+                    const option = document.createElement('option');
+                    option.value = cinema._id;
+                    option.textContent = cinema.name;
+                    cinemaSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách rạp:', error);
+            }
+        };
+
+        const fetchRooms = async () => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/room/getAll');
+                const roomList = document.getElementById('roomList');
+                roomList.innerHTML = ''; // Xóa danh sách cũ
+                response.data.forEach(room => {
+                    const roomItem = document.createElement('div');
+                    roomItem.className = 'room-item';
+                    roomItem.innerHTML = `
+                        <h4>${room.name}</h4>
+                        <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
+                        <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
+                        <p><strong>ID Rạp:</strong> ${room.cinemaId}</p>
+                        <div class="actions">
+                            <button class="edit-btn" onclick="editRoom('${room._id}', '${room.name}', '${room.roomShape}', ${room.totalSeat}, '${room.cinemaId}')">Sửa</button>
+                            <button class="delete-btn" onclick="deleteRoom('${room._id}')">Xóa</button>
+                        </div>
+                    `;
+                    roomList.appendChild(roomItem);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách phòng:', error);
+            }
+        };
+
+        const addRoom = async () => {
+            const roomName = document.getElementById('roomName').value;
+            const roomShape = document.getElementById('roomShape').value;
+            const totalSeat = document.getElementById('totalSeat').value;
+            const cinemaId = document.getElementById('cinemaId').value;
+
+            if (!roomName || !roomShape || !totalSeat || !cinemaId) {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+                return;
+            }
+
+            try {
+                await axios.post('https://be-movie-sooty.vercel.app/room/add', {
+                    name: roomName,
+                    roomShape: roomShape,
+                    totalSeat: parseInt(totalSeat),
+                    cinema_id: cinemaId
+                });
+                alert('Thêm phòng thành công!');
+                fetchRooms();
+            } catch (error) {
+                console.error('Lỗi khi thêm phòng:', error);
+                alert('Thêm phòng thất bại!');
+            }
+        };
+
+        const deleteRoom = async (roomId) => {
+            if (!confirm('Bạn có chắc chắn muốn xóa phòng này?')) return;
+
+            try {
+                await axios.post('https://be-movie-sooty.vercel.app/room/delete', { _id: roomId });
+                alert('Xóa phòng thành công!');
+                fetchRooms();
+            } catch (error) {
+                console.error('Lỗi khi xóa phòng:', error);
+                alert('Xóa phòng thất bại!');
+            }
+        };
+
+        const editRoom = (roomId, name, shape, seats, cinemaId) => {
+            document.getElementById('roomName').value = name;
+            document.getElementById('roomShape').value = shape;
+            document.getElementById('totalSeat').value = seats;
+            document.getElementById('cinemaId').value = cinemaId;
+            document.querySelector('.room-form button').onclick = () => updateRoom(roomId);
+        };
+
+        const updateRoom = async (roomId) => {
+            const roomName = document.getElementById('roomName').value;
+            const roomShape = document.getElementById('roomShape').value;
+            const totalSeat = document.getElementById('totalSeat').value;
+            const cinemaId = document.getElementById('cinemaId').value;
+
+            if (!roomName || !roomShape || !totalSeat || !cinemaId) {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+                return;
+            }
+
+            try {
+                await axios.post('https://be-movie-sooty.vercel.app/room/update', {
+                    _id: roomId,
+                    name: roomName,
+                    roomShape: roomShape,
+                    totalSeat: parseInt(totalSeat),
+                    cinema_id: cinemaId
+                });
+                alert('Cập nhật phòng thành công!');
+                fetchRooms();
+                document.querySelector('.room-form button').onclick = addRoom;
+            } catch (error) {
+                console.error('Lỗi khi cập nhật phòng:', error);
+                alert('Cập nhật phòng thất bại!');
+            }
+        };
+
+        // Tải dữ liệu khi trang được mở
+        fetchCinemas();
+        fetchRooms();
+    </script>
+</body>
+</html>

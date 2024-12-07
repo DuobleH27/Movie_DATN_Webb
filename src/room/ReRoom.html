@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Phòng Đã Xóa</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .room-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .room-item h4 {
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        .room-item p {
+            margin: 5px 0;
+        }
+
+        .room-item button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .room-item button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Phòng Đã Xóa</h1>
+
+        <!-- Danh sách phòng đã xóa -->
+        <div id="deletedRoomList"></div>
+    </div>
+
+    <script>
+        // Lấy danh sách phòng đã xóa
+        const fetchDeletedRooms = async () => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/room/getDelete');
+                const roomList = document.getElementById('deletedRoomList');
+                roomList.innerHTML = ''; // Xóa danh sách cũ
+                response.data.forEach(room => {
+                    const roomItem = document.createElement('div');
+                    roomItem.className = 'room-item';
+                    roomItem.innerHTML = `
+                        <h4>${room.name}</h4>
+                        <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
+                        <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
+                        <p><strong>ID Phòng:</strong> ${room._id}</p>
+                        <button onclick="revertRoom('${room._id}')">Khôi Phục</button>
+                    `;
+                    roomList.appendChild(roomItem);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách phòng đã xóa:', error);
+            }
+        };
+
+        // Khôi phục phòng đã xóa
+        const revertRoom = async (roomId) => {
+            if (!confirm('Bạn có chắc chắn muốn khôi phục phòng này?')) return;
+
+            try {
+                const response = await axios.post('https://be-movie-sooty.vercel.app/room/revert', { _id: roomId });
+                if (response.data.status === "true") {
+                    alert('Khôi phục phòng thành công!');
+                    fetchDeletedRooms();
+                } else {
+                    alert('Khôi phục phòng thất bại!');
+                }
+            } catch (error) {
+                console.error('Lỗi khi khôi phục phòng:', error);
+                alert('Khôi phục phòng thất bại!');
+            }
+        };
+
+        // Tải dữ liệu khi trang được mở
+        fetchDeletedRooms();
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Loại Ghế</title>
+    <!-- Thư viện cần thiết -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .seat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .seat-details {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .seat-details span {
+            display: block;
+            margin: 3px 0;
+        }
+
+        .status-btn {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .status-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Loại Ghế</h1>
+        <div id="seat-list"></div>
+    </div>
+
+    <script type="module">
+        const fetchSeats = async () => {
+            try {
+                const response = await axios.get('https://be-movie-sooty.vercel.app/typeseat/getDelete');
+                const seatList = document.getElementById('seat-list');
+                seatList.innerHTML = '';
+                response.data.forEach((seat) => {
+                    const seatItem = document.createElement('div');
+                    seatItem.className = 'seat-item';
+                    seatItem.innerHTML = `
+                        <div class="seat-details">
+                            <span><strong>Tên loại ghế:</strong> ${seat.typeSeatName}</span>
+                            <span><strong>Giá loại ghế:</strong> ${seat.typeSeatPrice.toLocaleString()} VNĐ</span>
+                        </div>
+                        <button class="status-btn" onclick="restoreSeat('${seat._id}')">
+                            Khôi phục
+                        </button>
+                    `;
+                    seatList.appendChild(seatItem);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy danh sách loại ghế:', error);
+            }
+        };
+
+        // Attach the function to the global scope
+        window.restoreSeat = async (id) => {
+            try {
+                console.log(id)
+                const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/revert', {
+                    _id: id
+                    
+                });
+                alert('Loại ghế đã được khôi phục thành công!');
+                fetchSeats(); // Refresh the list after restoring seat
+            } catch (error) {
+                console.error('Lỗi khi khôi phục loại ghế:', error);
+                alert('Đã xảy ra lỗi khi khôi phục loại ghế.');
+            }
+        };
+
+        fetchSeats(); // Fetch seats when the page loads
+    </script>
+</body>
+</html>
