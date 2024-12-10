@@ -7,23 +7,83 @@
   <!-- Thêm Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
   <style>
+    /* Căn chỉnh và đảm bảo các card có kích thước đồng nhất */
     .movie-card {
-      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      text-align: center;
+      padding: 10px;
     }
-    .movie-img {
+
+    /* Hộp ảnh với tỉ lệ nhất quán */
+    .movie-img-container {
       height: 300px;
-      object-fit: cover;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ddd;
+    }
+
+    .movie-img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain; /* Đảm bảo ảnh không bị cắt */
+    }
+
+    /* Mô tả phim với chiều cao giới hạn */
+    .movie-description {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 3; /* Hiển thị tối đa 3 dòng */
+      -webkit-box-orient: vertical;
+      transition: max-height 0.3s ease;
+      max-height: 70px; /* Giới hạn chiều cao mặc định */
+    }
+
+    .movie-description.expanded {
+      -webkit-line-clamp: unset;
+      max-height: none;
+    }
+
+    .show-more {
+      color: #007bff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Card căn chỉnh đồng nhất */
+    .row > .col-md-4 {
+      display: flex;
+      flex-grow: 1;
+    }
+
+    .movie-card {
+      flex: 1;
+      min-width: 280px; /* Đảm bảo chiều ngang đồng nhất */
     }
   </style>
 </head>
 <body>
   <div class="container my-5">
-    <h1 id="tabTitle" class="text-center mb-4">Movies in Theater</h1>
+    <h1 id="tabTitle"  style="margin-top:-1000dp ; color: #FF515A;" class="text-center mb-4">Movies in Theater</h1>
     <div id="movieContainer" class="row"></div>
   </div>
 
   <script>
     let movieData = null;
+
+    function handleShowMore(event) {
+      const descriptionElement = event.target.previousElementSibling;
+      descriptionElement.classList.toggle('expanded');
+      
+      event.target.textContent = descriptionElement.classList.contains('expanded') 
+        ? 'Ẩn bớt' 
+        : 'Xem thêm';
+    }
 
     async function showMovieList() {
       removeLastScreen();
@@ -39,12 +99,15 @@
 
       movieData.forEach((movie) => {
         movieContainer.insertAdjacentHTML('beforeend', `
-          <div class="col-md-4">
+          <div class="col-md-4 d-flex">
             <div class="card movie-card">
-              <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="card-img-top movie-img" alt="${movie.name}">
-              <div class="card-body">
+              <div class="movie-img-container">
+                <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="movie-img" alt="${movie.name}">
+              </div>
+              <div class="card-body d-flex flex-column">
                 <h5 class="movie-title">${movie.name}</h5>
                 <p class="movie-description">${movie.description || 'N/A'}</p>
+                <span class="show-more" onclick="handleShowMore(event)">Xem thêm</span>
                 <p><strong>Duration:</strong> ${movie.duration}</p>
                 <p><strong>Release Date:</strong> ${new Date(movie.release_date).toLocaleDateString()}</p>
                 <p><strong>Rating:</strong> ${movie.rating || 'N/A'}</p>
