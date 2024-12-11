@@ -63,56 +63,101 @@
         .status-btn:hover {
             background-color: #0056b3;
         }
+
+        .dropdown {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Quản Lý Loại Ghế</h1>
+
+        <!-- Dropdown chọn rạp -->
+        <div class="dropdown">
+            <select id="cinema-dropdown" style="width: 100%; padding: 10px;">
+                <option value="" disabled selected>Chọn rạp chiếu</option>
+                <!-- Rạp sẽ được thêm vào ở đây từ API -->
+            </select>
+        </div>
+
+        <!-- Danh sách loại ghế đã xóa sẽ hiển thị ở đây -->
         <div id="seat-list"></div>
     </div>
 
     <script type="module">
-        const fetchSeats = async () => {
+        // Fetch danh sách các rạp chiếu
+        const fetchCinemas = async () => {
             try {
-                const response = await axios.get('https://be-movie-sooty.vercel.app/typeseat/getDelete');
-                const seatList = document.getElementById('seat-list');
-                seatList.innerHTML = '';
-                response.data.forEach((seat) => {
-                    const seatItem = document.createElement('div');
-                    seatItem.className = 'seat-item';
-                    seatItem.innerHTML = `
-                        <div class="seat-details">
-                            <span><strong>Tên loại ghế:</strong> ${seat.typeSeatName}</span>
-                            <span><strong>Giá loại ghế:</strong> ${seat.typeSeatPrice.toLocaleString()} VNĐ</span>
-                        </div>
-                        <button class="status-btn" onclick="restoreSeat('${seat._id}')">
-                            Khôi phục
-                        </button>
-                    `;
-                    seatList.appendChild(seatItem);
-                });
+                const response = await axios.get('https://be-movie-sooty.vercel.app/cinema/getAll');
+                populateCinemaDropdown(response.data);
             } catch (error) {
-                console.error('Lỗi khi lấy danh sách loại ghế:', error);
+                console.error('Lỗi khi lấy danh sách rạp chiếu:', error);
             }
         };
 
-        // Attach the function to the global scope
-        window.restoreSeat = async (id) => {
+        // Populate dropdown với danh sách rạp chiếu
+        const populateCinemaDropdown = (cinemas) => {
+            const dropdown = document.getElementById('cinema-dropdown');
+            dropdown.innerHTML = '<option value="" disabled selected>Chọn rạp chiếu</option>';
+            cinemas.forEach(cinema => {
+                const option = document.createElement('option');
+                option.value = cinema._id;
+                option.textContent = cinema.name;
+                dropdown.appendChild(option);
+            });
+            dropdown.addEventListener('change', () => {
+                const cinemaId = dropdown.value;
+                if (cinemaId) {
+                    fetchDeletedSeats(cinemaId); // Lọc theo rạp đã chọn
+                }
+            });
+        };
+
+        // Fetch loại ghế đã xóa theo rạp
+        const fetchDeletedSeats = async (cinemaId) => {
             try {
-                console.log(id)
+                const response = await axios.get(`https://be-movie-sooty.vercel.app/typeseat/getDeleteByCinema?cinemaId=${cinemaId}`);
+                const seatList = document.getElementById('seat-list');
+                seatList.innerHTML = '';
+                if (response.data && response.data.length > 0) {
+                    response.data.forEach(seat => {
+                        const seatItem = document.createElement('div');
+                        seatItem.className = 'seat-item';
+                        seatItem.innerHTML = `
+                            <div class="seat-details">
+                                <span><strong>Tên loại ghế:</strong> ${seat.typeSeatName}</span>
+                                <span><strong>Giá loại ghế:</strong> ${seat.typeSeatPrice.toLocaleString()} VNĐ</span>
+                            </div>
+                            <button class="status-btn" onclick="restoreSeat('${seat._id}', '${cinemaId}')">
+                                Khôi phục
+                            </button>
+                        `;
+                        seatList.appendChild(seatItem);
+                    });
+                } else {
+                    seatList.innerHTML = '<p>Không có loại ghế đã xóa cho rạp này.</p>';
+                }
+            } catch (error) {
+                console.error('Lỗi khi lấy loại ghế đã xóa:', error);
+            }
+        };
+
+        // Khôi phục loại ghế
+        window.restoreSeat = async (id, cinemaId) => {
+            try {
                 const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/revert', {
                     _id: id
-                    
                 });
                 alert('Loại ghế đã được khôi phục thành công!');
-                fetchSeats(); // Refresh the list after restoring seat
+                fetchDeletedSeats(cinemaId); // Cập nhật lại danh sách sau khi khôi phục
             } catch (error) {
                 console.error('Lỗi khi khôi phục loại ghế:', error);
                 alert('Đã xảy ra lỗi khi khôi phục loại ghế.');
             }
         };
 
-        fetchSeats(); // Fetch seats when the page loads
+        fetchCinemas(); // Fetch danh sách rạp khi trang tải
     </script>
 </body>
 </html>
