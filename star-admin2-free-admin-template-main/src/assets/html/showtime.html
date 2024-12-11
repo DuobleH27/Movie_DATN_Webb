@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,7 +31,8 @@
             margin-bottom: 20px;
         }
 
-        select, button {
+        select,
+        button {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -99,7 +101,8 @@
             margin-bottom: 5px;
         }
 
-        .modal-content input, .modal-content select {
+        .modal-content input,
+        .modal-content select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -141,6 +144,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Lọc Suất Chiếu Theo Phim</h1>
@@ -160,53 +164,172 @@
                 <select id="movie-id" required>
                     <option value="">Chọn phim</option>
                 </select>
+                <label for="cinema-id">Chọn rạp:</label>
+                <select id="cinema-id" required>
+                    <option value="">Chọn rạp</option>
+                </select>
                 <label for="room-id">Chọn phòng:</label>
                 <select id="room-id" required>
                     <option value="">Chọn phòng</option>
                 </select>
-                <label for="start-time">Thời gian bắt đầu:</label>
-                <input type="datetime-local" id="start-time" required>
-                <label for="end-time">Thời gian kết thúc:</label>
-                <input type="datetime-local" id="end-time" required>
                 <label for="day">Ngày:</label>
-                <input type="date" id="day" required>
-                <label for="room-shape">Hình dạng phòng:</label>
-                <input type="text" id="room-shape" placeholder="Hình dạng phòng" required>
+                <label for="day">Ngày:</label>
+                <input type="date" id="day" required min="">
+
+                <label for="start-time">Thời gian bắt đầu:</label>
+                <input type="time" id="start-time" required>
+                <span id="start-date-display">Ngày: </span> <!-- Vùng hiển thị ngày bắt đầu -->
+
+                <label for="end-time">Thời gian kết thúc:</label>
+                <input type="time" id="end-time" required>
+                <span id="end-date-display">Ngày: </span> <!-- Vùng hiển thị ngày kết thúc -->
+
+
+
                 <button type="submit">Thêm suất chiếu</button>
                 <button type="button" class="close-button" id="close-modal-btn">Đóng</button>
             </form>
         </div>
     </div>
 
+
     <script>
         let movies = [];
+        let cinemas = [];
         let rooms = [];
 
-        const fetchMoviesAndRooms = async () => {
+        // Đặt ngày hiện tại làm giá trị tối thiểu cho ngày được chọn
+        const dayInput = document.getElementById('day');
+
+        function setMinDate() {
+            const today = new Date(); // Lấy ngày hiện tại
+            const yyyy = today.getFullYear(); // Lấy năm
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Lấy tháng (0-11, cần +1)
+            const dd = String(today.getDate()).padStart(2, '0'); // Lấy ngày
+
+            // Định dạng ngày thành yyyy-MM-dd
+            const minDate = `${yyyy}-${mm}-${dd}`;
+            dayInput.setAttribute('min', minDate); // Đặt giá trị min cho input
+        }
+
+        // Gọi hàm khi tải trang
+        setMinDate();
+
+        let isDateManuallySet = false; // Biến cờ kiểm tra người dùng có chỉnh ngày thủ công không
+
+        // Cập nhật khi người dùng chỉnh ngày trực tiếp
+        document.getElementById('day').addEventListener('input', () => {
+            isDateManuallySet = true; // Đánh dấu ngày đã được chỉnh tay
+            updateStartDateTime();
+            updateEndDateTime();
+        });
+
+        // Cập nhật khi người dùng chỉnh giờ bắt đầu
+        document.getElementById('start-time').addEventListener('input', () => {
+            updateStartDateTime();
+            updateEndDateTime();
+        });
+
+        // Cập nhật khi người dùng chỉnh giờ kết thúc
+        document.getElementById('end-time').addEventListener('input', () => {
+            updateEndDateTime();
+        });
+
+        function updateStartDateTime() {
+            const day = document.getElementById('day').value; // Lấy giá trị ngày
+            const startTime = document.getElementById('start-time').value; // Lấy giá trị giờ bắt đầu
+            const startDateDisplay = document.getElementById('start-date-display'); // Vùng hiển thị ngày bắt đầu
+
+            if (day && startTime) {
+                const startDate = new Date(day); // Khởi tạo ngày từ giá trị người dùng chọn
+                startDateDisplay.textContent = `Ngày: ${startDate.toLocaleDateString()}`; // Hiển thị ngày
+            }
+        }
+
+        function updateEndDateTime() {
+            const day = document.getElementById('day').value; // Lấy giá trị ngày
+            const startTime = document.getElementById('start-time').value; // Lấy giá trị giờ bắt đầu
+            const endTime = document.getElementById('end-time').value; // Lấy giá trị giờ kết thúc
+            const endDateDisplay = document.getElementById('end-date-display'); // Vùng hiển thị ngày kết thúc
+
+            if (day && startTime && endTime) {
+                let endDate = new Date(day); // Khởi tạo ngày từ giá trị người dùng chọn
+
+                // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu, tăng ngày kết thúc thêm 1
+                if (endTime < startTime) {
+                    endDate.setDate(endDate.getDate() + 1);
+                }
+
+                endDateDisplay.textContent = `Ngày: ${endDate.toLocaleDateString()}`; // Hiển thị ngày kết thúc
+            }
+        }
+
+
+
+
+        const fetchCinemasAndMovies = async () => {
             try {
+                // Fetch cinemas
+                const cinemaResponse = await axios.get('https://be-movie-sooty.vercel.app/cinema/getAll');
+                cinemas = cinemaResponse.data;
+                const cinemaSelect = document.getElementById('cinema-id'); // Dropdown trong modal
+
+                cinemaSelect.innerHTML = '<option value="">Chọn rạp</option>';
+                cinemas.forEach(cinema => {
+                    const option = document.createElement('option');
+                    option.value = cinema._id;
+                    option.textContent = cinema.name;
+                    cinemaSelect.appendChild(option); // Thêm rạp vào dropdown trong modal
+                });
+
+                console.log('Danh sách rạp:', cinemas);
+
                 // Fetch movies
                 const movieResponse = await axios.get('https://be-movie-sooty.vercel.app/movie/getAll');
                 movies = movieResponse.data;
-                const movieFilter = document.getElementById('movie-filter');
-                const movieSelect = document.getElementById('movie-id');
+                const movieSelect = document.getElementById('movie-id'); // Dropdown trong modal
+                const movieFilter = document.getElementById('movie-filter'); // Dropdown ngoài modal
 
-                // Populate the movie filter and form dropdown
+                movieSelect.innerHTML = '<option value="">Chọn phim</option>';
+                movieFilter.innerHTML = '<option value="">Tất cả phim</option>';
                 movies.forEach(movie => {
-                    const option = document.createElement('option');
-                    option.value = movie._id;
-                    option.textContent = movie.name;
-                    movieFilter.appendChild(option);
+                    const option1 = document.createElement('option');
+                    option1.value = movie._id;
+                    option1.textContent = movie.name;
+                    movieSelect.appendChild(option1);
 
-                    const formOption = option.cloneNode(true);
-                    movieSelect.appendChild(formOption);
+                    const option2 = document.createElement('option');
+                    option2.value = movie._id;
+                    option2.textContent = movie.name;
+                    movieFilter.appendChild(option2);
                 });
 
-                // Fetch rooms
-                const roomResponse = await axios.get('https://be-movie-sooty.vercel.app/room/getAll');
-                rooms = roomResponse.data;
-                const roomSelect = document.getElementById('room-id');
+                console.log('Danh sách phim:', movies);
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách rạp và phim:', error);
+                alert('Lỗi khi tải danh sách rạp và phim.');
+            }
+        };
 
-                // Populate the room form dropdown
+
+
+
+
+        const fetchRoomsByCinema = async (cinemaId) => {
+            try {
+                console.log(`Fetching rooms for cinemaId: ${cinemaId}`); // Debug
+                const response = await axios.get('https://be-movie-sooty.vercel.app/room/getByCinema', {
+                    params: { cinemaId: cinemaId },
+                });
+                rooms = response.data;
+
+                const roomSelect = document.getElementById('room-id');
+                roomSelect.innerHTML = '<option value="">Chọn phòng</option>'; // Reset dropdown
+
+                if (rooms.length === 0) {
+                    console.log('Không có phòng nào cho rạp này.'); // Debug
+                }
+
                 rooms.forEach(room => {
                     const option = document.createElement('option');
                     option.value = room._id;
@@ -214,54 +337,52 @@
                     roomSelect.appendChild(option);
                 });
 
+                console.log('Danh sách phòng:', rooms); // Debug
             } catch (error) {
-                console.error('Lỗi khi lấy danh sách phim và phòng:', error);
-                alert('Lỗi khi lấy danh sách phim và phòng.');
+                console.error('Lỗi khi lấy danh sách phòng:', error);
+                alert('Lỗi khi lấy danh sách phòng.');
             }
         };
 
-        const getMovieNameById = (id) => {
-            const movie = movies.find(movie => movie._id === id);
-            return movie ? movie.name : 'Không rõ';
-        };
-
-        const getRoomNameById = (id) => {
-            const room = rooms.find(room => room._id === id);
-            return room ? room.name : 'Không rõ';
-        };
 
         const fetchShowtimes = async (movieId = null) => {
             try {
                 const response = await axios.get('https://be-movie-sooty.vercel.app/showtime/getAll');
-                const showtimes = response.data;
+                const showtimes = response.data; // Lấy tất cả danh sách showtime từ API
                 const showtimeList = document.getElementById('showtime-list');
 
-                showtimeList.innerHTML = ''; // Clear previous results
+                // Xóa danh sách hiển thị trước đó
+                showtimeList.innerHTML = '';
 
-                // Filter showtimes based on the selected movie if movieId is provided
-                const filteredShowtimes = movieId 
-                    ? showtimes.filter(showtime => showtime.movieId === movieId) 
+                // Lọc showtime theo movieId nếu có
+                const filteredShowtimes = movieId
+                    ? showtimes.filter(showtime => showtime.movieId === movieId)
                     : showtimes;
 
+                // Nếu không có showtime nào phù hợp, hiển thị thông báo
                 if (filteredShowtimes.length === 0) {
                     showtimeList.innerHTML = '<p>Không có suất chiếu nào.</p>';
                     return;
                 }
 
+                // Hiển thị danh sách showtime phù hợp
                 filteredShowtimes.forEach(showtime => {
+                    const movieName = movies.find(movie => movie._id === showtime.movieId)?.name || 'Không rõ';
+                    const roomName = rooms.find(room => room._id === showtime.roomId)?.name || 'Không rõ';
+
                     const showtimeItem = document.createElement('div');
                     showtimeItem.className = 'showtime-item';
                     showtimeItem.innerHTML = `
-                        <div class="showtime-details">
-                            <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
-                            <span><strong>Tên Phim:</strong> ${getMovieNameById(showtime.movieId)}</span>
-                            <span><strong>Tên Phòng:</strong> ${getRoomNameById(showtime.roomId)}</span>
-                            <span><strong>Thời Gian Bắt Đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
-                            <span><strong>Thời Gian Kết Thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
-                            <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
-                            <span><strong>Hình Dạng Phòng:</strong> ${showtime.Room_Shape}</span>
-                        </div>
-                    `;
+                <div class="showtime-details">
+                    <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
+                    <span><strong>Phim:</strong> ${movieName}</span>
+                    <span><strong>Phòng:</strong> ${roomName}</span>
+                    <span><strong>Thời gian bắt đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
+                    <span><strong>Thời gian kết thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
+                    <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
+                    <span><strong>Hình dạng phòng:</strong> ${showtime.Room_Shape || 'Không rõ'}</span>
+                </div>
+            `;
                     showtimeList.appendChild(showtimeItem);
                 });
             } catch (error) {
@@ -270,12 +391,24 @@
             }
         };
 
+
         document.getElementById('movie-filter').addEventListener('change', (event) => {
-            const selectedMovieId = event.target.value;
-            if (selectedMovieId) {
-                fetchShowtimes(selectedMovieId);
+            const selectedMovieId = event.target.value; // Lấy ID phim được chọn
+            console.log('Phim được chọn:', selectedMovieId); // Debug
+            fetchShowtimes(selectedMovieId || null); // Lọc showtime theo phim
+        });
+
+
+        // Event listener for cinema selection
+        document.getElementById('cinema-id').addEventListener('change', (event) => {
+            const selectedCinemaId = event.target.value;
+
+            if (selectedCinemaId) {
+                console.log(`Rạp được chọn: ${selectedCinemaId}`); // Debug
+                fetchRoomsByCinema(selectedCinemaId);
             } else {
-                fetchShowtimes(); // Get all showtimes if no movie is selected
+                const roomSelect = document.getElementById('room-id');
+                roomSelect.innerHTML = '<option value="">Chọn phòng</option>'; // Clear nếu không chọn rạp
             }
         });
 
@@ -293,36 +426,50 @@
 
             const movieId = document.getElementById('movie-id').value;
             const roomId = document.getElementById('room-id').value;
-            const startTime = document.getElementById('start-time').value;
-            const endTime = document.getElementById('end-time').value;
-            const day = document.getElementById('day').value;
-            const roomShape = document.getElementById('room-shape').value;
+            const day = document.getElementById('day').value; // Ngày được chọn
+            const startTime = document.getElementById('start-time').value; // Giờ bắt đầu
+            const endTime = document.getElementById('end-time').value; // Giờ kết thúc
+            
+
+            // Kết hợp ngày với giờ bắt đầu
+            const startDateTime = `${day}T${startTime}`;
+
+            // Tạo ngày giờ kết thúc
+            let endDateTime = `${day}T${endTime}`;
+            if (startTime > endTime) {
+                // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu, tăng ngày kết thúc thêm 1
+                const nextDay = new Date(day);
+                nextDay.setDate(nextDay.getDate() + 1);
+                endDateTime = `${nextDay.toISOString().split('T')[0]}T${endTime}`;
+            }
 
             const newShowtime = {
                 movieId,
                 roomId,
-                startTime: new Date(startTime).toISOString(),
-                endTime: new Date(endTime).toISOString(),
+                startTime: new Date(startDateTime).toISOString(),
+                endTime: new Date(endDateTime).toISOString(),
                 day: new Date(day).toISOString(),
-                Room_Shape: roomShape
+                
             };
 
             try {
                 await axios.post('https://be-movie-sooty.vercel.app/showtime/add', newShowtime);
                 alert('Thêm suất chiếu thành công!');
-                document.getElementById('add-showtime-form').reset(); // Clear form after submission
-                document.getElementById('add-showtime-modal').style.display = 'none'; // Close modal
-                fetchShowtimes(); // Refresh the showtime list
+                document.getElementById('add-showtime-form').reset(); // Xóa form
+                document.getElementById('add-showtime-modal').style.display = 'none'; // Đóng modal
+                fetchShowtimes(); // Làm mới danh sách suất chiếu
             } catch (error) {
                 console.error('Lỗi khi thêm suất chiếu:', error);
                 alert('Lỗi khi thêm suất chiếu.');
             }
         });
 
-        // Fetch movies, rooms, and showtimes on page load
-        fetchMoviesAndRooms().then(() => {
+
+        // Fetch cinemas, movies, and showtimes on page load
+        fetchCinemasAndMovies().then(() => {
             fetchShowtimes();
         });
     </script>
 </body>
+
 </html>

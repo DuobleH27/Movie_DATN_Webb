@@ -169,8 +169,12 @@
             <input type="number" id="movie-rating" placeholder="Điểm đánh giá" />
             <label for="movie-description">Mô tả phim</label>
             <textarea id="movie-description" placeholder="Mô tả phim"></textarea>
-            <label for="movie-image">URL ảnh phim</label>
-            <input type="text" id="movie-image" placeholder="URL ảnh phim" />
+            
+            <label for="movie-image">Hình ảnh phim</label>
+<input type="file" id="movie-image-upload" accept="image/*" />
+<progress id="upload-progress" value="0" max="100" style="width: 100%; display: none;"></progress>
+<input type="hidden" id="movie-image" /> <!-- Dùng để lưu URL sau khi tải lên -->
+
             <label for="movie-trailer">URL trailer</label>
             <input type="text" id="movie-trailer" placeholder="URL trailer" />
             <select id="movie-genre">
@@ -285,6 +289,48 @@
                 document.getElementById('movie-genre').value = ''; // Đặt lại thể loại về trống cho phim mới
             }
         };
+        //upanh
+        const uploadImageToCloud = async (file) => {
+    const progressBar = document.getElementById('upload-progress');
+    progressBar.style.display = 'block'; // Hiển thị thanh tiến trình
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ag3ikjcv'); // Thay bằng upload_preset của bạn
+    formData.append('cloud_name', 'dic4m0ak0'); // Thay bằng tên cloud của bạn
+
+    try {
+        const response = await axios.post('https://api.cloudinary.com/v1_1/dic4m0ak0/image/upload', formData, {
+            onUploadProgress: (event) => {
+                const progress = Math.round((event.loaded * 100) / event.total);
+                progressBar.value = progress; // Cập nhật thanh tiến trình
+            },
+        });
+        progressBar.style.display = 'none'; // Ẩn thanh tiến trình sau khi tải xong
+        return response.data.secure_url; // Trả về URL của ảnh
+    } catch (error) {
+        progressBar.style.display = 'none'; // Ẩn thanh tiến trình nếu lỗi xảy ra
+        alert('Lỗi khi tải ảnh lên!');
+        console.error(error);
+        throw error;
+    }
+};
+
+// Thêm sự kiện thay đổi cho input file
+document.getElementById('movie-image-upload').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const imageUrl = await uploadImageToCloud(file);
+        document.getElementById('movie-image').value = imageUrl; // Lưu URL vào hidden input
+        alert('Ảnh đã được tải lên thành công!');
+    } catch (error) {
+        console.error('Lỗi khi tải ảnh:', error);
+    }
+});
+
+
 
         const closeModal = () => {
             document.getElementById('add-movie-modal').style.display = 'none';
