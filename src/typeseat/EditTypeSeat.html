@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Loại Ghế</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
@@ -38,11 +37,6 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 10px;
-        }
-
-        .seat-details span {
-            display: block;
-            margin: 3px 0;
         }
 
         .seat-controls button {
@@ -93,7 +87,7 @@
             width: 350px;
         }
 
-        .modal-content input {
+        .modal-content input, .modal-content select {
             width: 100%;
             margin-bottom: 10px;
             padding: 8px;
@@ -121,28 +115,50 @@
         .cancel-btn:hover {
             background-color: #c82333;
         }
+
+        #notification {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Quản Lý Loại Ghế</h1>
+
+        <!-- Thông báo -->
+        <div id="notification">
+            <strong>Thông báo:</strong> <span id="notification-message"></span>
+        </div>
+
+        <div id="cinema-select">
+            <select id="cinema-dropdown" style="width: 100%; margin-bottom: 10px; padding: 10px;">
+                <option value="" disabled selected>Chọn rạp chiếu</option>
+            </select>
+        </div>
+
         <button id="open-typeSeat-modal-btn" class="add-seat-btn">Thêm Loại Ghế</button>
-        
-        <div id="cinema-list" style="margin-bottom: 20px;"></div>
-        
+        <div id="typeSeat-list"></div>
+
+        <!-- Modal -->
         <div class="modal" id="typeSeat-modal">
             <div class="modal-content">
-                <h2>Thêm Loại Ghế</h2>
-                <input type="text" id="typeSeat-name" placeholder="Tên loại ghế" />
-                <input type="text" id="cinema-id" placeholder="ID Rạp chiếu" />
-                <input type="number" id="typeSeat-price" placeholder="Giá loại ghế" />
+                <h2 id="modal-title">Thêm Loại Ghế</h2>
+                <select id="typeSeat-name" style="width: 100%; margin-bottom: 10px; padding: 10px;">
+                    <option value="" disabled selected>Chọn loại ghế</option>
+                </select>
+                <input type="number" id="typeSeat-price" placeholder="Giá loại ghế" style="width: 100%; padding: 10px; margin-bottom: 10px;" />
                 <div style="display: flex; justify-content: space-between; margin-top: 10px;">
                     <button id="save-typeSeat-btn">Lưu</button>
                     <button class="cancel-btn" id="cancel-typeSeat-btn">Hủy</button>
                 </div>
             </div>
         </div>
-        <div id="typeSeat-list"></div>
     </div>
 
     <script>
@@ -151,43 +167,73 @@
             const openModalBtn = document.getElementById('open-typeSeat-modal-btn');
             const cancelModalBtn = document.getElementById('cancel-typeSeat-btn');
             const saveModalBtn = document.getElementById('save-typeSeat-btn');
-            const typeSeatNameInput = document.getElementById('typeSeat-name');
-            const cinemaIdInput = document.getElementById('cinema-id');
+            const typeSeatNameSelect = document.getElementById('typeSeat-name');
             const typeSeatPriceInput = document.getElementById('typeSeat-price');
             const typeSeatList = document.getElementById('typeSeat-list');
-            const cinemaList = document.getElementById('cinema-list');
+            const cinemaDropdown = document.getElementById('cinema-dropdown');
+            const modalTitle = document.getElementById('modal-title');
+
+            let isEdit = false;
+            let editingTypeSeatId = null;
 
             async function fetchCinemas() {
                 try {
                     const response = await axios.get('http://be-movie-sooty.vercel.app/cinema/getAll');
-                    displayCinemas(response.data);
+                    populateCinemaDropdown(response.data);
                 } catch (error) {
                     console.error('Error fetching cinemas:', error);
                 }
             }
 
-            function displayCinemas(cinemas) {
-                cinemaList.innerHTML = '<h3>Danh sách rạp chiếu:</h3>';
+            function populateCinemaDropdown(cinemas) {
+                cinemaDropdown.innerHTML = '<option value="" disabled selected>Chọn rạp chiếu</option>';
                 cinemas.forEach((cinema) => {
-                    const item = document.createElement('button');
-                    item.textContent = cinema.name;
-                    item.style.margin = '5px';
-                    item.onclick = () => {
-                        cinemaIdInput.value = cinema._id; // Set ID rạp vào input
-                        fetchTypeSeats(cinema._id); // Gọi hàm fetch loại ghế dựa trên ID rạp
-                    };
-                    cinemaList.appendChild(item);
+                    const option = document.createElement('option');
+                    option.value = cinema._id;
+                    option.textContent = cinema.name;
+                    cinemaDropdown.appendChild(option);
+                });
+
+                cinemaDropdown.addEventListener('change', () => {
+                    const cinemaId = cinemaDropdown.value;
+                    fetchTypeSeats(cinemaId);
+                    fetchRemainingTypeSeats(cinemaId);
                 });
             }
 
             async function fetchTypeSeats(cinemaId) {
                 try {
-                        
-                    const response = await axios.get(`http://be-movie-sooty.vercel.app/typeseat/getAll?cinemaId=${cinemaId}`);
+                    const response = await axios.get(`http://be-movie-sooty.vercel.app/typeseat/getByCinemaId?cinemaId=${cinemaId}`);
                     displayTypeSeats(response.data);
                 } catch (error) {
                     console.error('Error fetching type seats:', error);
                 }
+            }
+
+            async function fetchRemainingTypeSeats(cinemaId) {
+                try {
+                    const response = await axios.get(`http://be-movie-sooty.vercel.app/typeseat/getRemain?cinemaId=${cinemaId}`);
+                    if (response.data && response.data.status === false) {
+                        showNotification('Đã đủ loại ghế, không thể thêm nữa', 'error');
+                        openModalBtn.style.display = 'none';  // Ẩn nút thêm ghế nếu đủ loại ghế
+                    } else {
+                        openModalBtn.style.display = 'block';  // Hiện lại nút thêm ghế nếu chưa đủ loại ghế
+                        populateRemainingTypeSeats(response.data.typeseat || []);
+                    }
+                } catch (error) {
+                    console.error('Error fetching remaining type seats:', error);
+                    populateRemainingTypeSeats([]);
+                }
+            }
+
+            function populateRemainingTypeSeats(remainingSeats) {
+                typeSeatNameSelect.innerHTML = '<option value="" disabled selected>Chọn loại ghế</option>';
+                remainingSeats.forEach((seat) => {
+                    const option = document.createElement('option');
+                    option.value = seat;
+                    option.textContent = getSeatDisplayName(seat);
+                    typeSeatNameSelect.appendChild(option);
+                });
             }
 
             function displayTypeSeats(typeSeats) {
@@ -197,12 +243,11 @@
                     item.className = 'seat-item';
                     item.innerHTML = `
                         <div class="seat-details">
-                            <strong>${typeSeat.typeSeatName}</strong><br>
-                            ID Rạp: ${typeSeat.cinemaId}<br>
+                            <strong>${getSeatDisplayName(typeSeat.typeSeatName)}</strong><br>
                             Giá: ${typeSeat.typeSeatPrice} VND
                         </div>
                         <div class="seat-controls">
-                            <button onclick="editTypeSeat('${typeSeat._id}')">Sửa</button>
+                            <button onclick="editTypeSeat('${typeSeat._id}', '${typeSeat.typeSeatName}', ${typeSeat.typeSeatPrice})">Sửa</button>
                             <button onclick="deleteTypeSeat('${typeSeat._id}')">Xóa</button>
                         </div>
                     `;
@@ -210,7 +255,54 @@
                 });
             }
 
+            saveModalBtn.addEventListener('click', async () => {
+                const typeSeatName = typeSeatNameSelect.value;
+                const cinemaId = cinemaDropdown.value;
+                const typeSeatPrice = typeSeatPriceInput.value;
+
+                if (typeSeatName && cinemaId && typeSeatPrice) {
+                    try {
+                        if (isEdit) {
+                            const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/update', {
+                                _id: editingTypeSeatId,
+                                typeSeatName,
+                                typeSeatPrice: Number(typeSeatPrice),
+                            });
+                            showNotification(response.data.status, 'success');
+                        } else {
+                            const remainingSeatsResponse = await axios.get(`https://be-movie-sooty.vercel.app/typeseat/getRemain?cinemaId=${cinemaId}`);
+                            if (remainingSeatsResponse.data.status === false) {
+                                showNotification('Đã đủ loại ghế, không thể thêm nữa', 'error');
+                                return;
+                            }
+
+                            const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/addTypeSeats', {
+                                typeSeatName,
+                                cinemaId,
+                                typeSeatPrice: Number(typeSeatPrice),
+                            });
+                            showNotification(response.data.message, 'success');
+                        }
+
+                        fetchTypeSeats(cinemaId);
+                        fetchRemainingTypeSeats(cinemaId);
+
+                        modal.style.display = 'none';
+                        typeSeatNameSelect.value = '';
+                        typeSeatPriceInput.value = '';
+                    } catch (error) {
+                        console.error('Error saving type seat:', error);
+                    }
+                } else {
+                    showNotification('Vui lòng điền đầy đủ thông tin', 'error');
+                }
+            });
+
             openModalBtn.addEventListener('click', () => {
+                isEdit = false;
+                modalTitle.textContent = 'Thêm Loại Ghế';
+                typeSeatNameSelect.value = '';
+                typeSeatPriceInput.value = '';
                 modal.style.display = 'flex';
             });
 
@@ -218,66 +310,64 @@
                 modal.style.display = 'none';
             });
 
-            saveModalBtn.addEventListener('click', async () => {
-                const typeSeatName = typeSeatNameInput.value;
-                const cinemaId = cinemaIdInput.value;
-                const typeSeatPrice = typeSeatPriceInput.value;
-
-                if (typeSeatName && cinemaId && typeSeatPrice) {
-                    try {
-                        const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/addTypeSeats', {
-                            typeSeatName,
-                            cinemaId,
-                            typeSeatPrice: Number(typeSeatPrice)
-                        });
-                        alert(response.data.message);
-                        fetchTypeSeats(cinemaId); // Refresh the list
-                        modal.style.display = 'none'; // Close modal
-                    } catch (error) {
-                        console.error('Error adding type seat:', error);
-                    }
-                } else {
-                    alert('Vui lòng điền đầy đủ thông tin');
-                }
-            });
-
-            window.editTypeSeat = async (id) => {
-                const typeSeatName = prompt('Nhập tên loại ghế mới');
-                const typeSeatPrice = prompt('Nhập giá loại ghế mới');
-
-                if (typeSeatName && typeSeatPrice) {
-                    try {
-                        const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/update', {
-                            _id: id,
-                            typeSeatName,
-                            cinemaId: '', // Giữ nguyên ID rạp chiếu nếu cần
-                            typeSeatPrice: Number(typeSeatPrice)
-                        });
-                        alert(response.data.message);
-                        fetchTypeSeats(cinemaIdInput.value); // Refresh the list
-                    } catch (error) {
-                        console.error('Error updating type seat:', error);
-                    }
-                } else {
-                    alert('Vui lòng nhập thông tin đầy đủ');
-                }
+            window.editTypeSeat = (id, name, price) => {
+                isEdit = true;
+                editingTypeSeatId = id;
+                modalTitle.textContent = 'Chỉnh Sửa Loại Ghế';
+                typeSeatNameSelect.innerHTML = `<option value="${name}" selected>${getSeatDisplayName(name)}</option>`;
+                typeSeatPriceInput.value = price;
+                modal.style.display = 'flex';
             };
 
             window.deleteTypeSeat = async (id) => {
                 if (confirm('Bạn có chắc chắn muốn xóa loại ghế này không?')) {
                     try {
                         const response = await axios.post('https://be-movie-sooty.vercel.app/typeseat/delete', {
-                            _id: id
+                            _id: id,
                         });
-                        alert(response.data.message);
-                        fetchTypeSeats(cinemaIdInput.value); // Refresh the list
+                        showNotification(response.data.message, 'success');
+                        fetchTypeSeats(cinemaDropdown.value);
+                        fetchRemainingTypeSeats(cinemaDropdown.value);
                     } catch (error) {
                         console.error('Error deleting type seat:', error);
                     }
                 }
             };
 
-            // Initial fetch for cinemas
+            function getSeatDisplayName(seatCode) {
+                switch (seatCode) {
+                    case 'V':
+                        return 'Ghế VIP';
+                    case 'D':
+                        return 'Ghế đôi';
+                    case 'T':
+                        return 'Ghế thường';
+                    default:
+                        return `Ghế ${seatCode}`;
+                }
+            }
+
+            function showNotification(message, type = 'error') {
+                const notification = document.getElementById('notification');
+                const notificationMessage = document.getElementById('notification-message');
+                
+                notificationMessage.textContent = message;
+                
+                if (type === 'error') {
+                    notification.style.backgroundColor = '#f8d7da';
+                    notification.style.color = '#721c24';
+                } else {
+                    notification.style.backgroundColor = '#d4edda';
+                    notification.style.color = '#155724';
+                }
+                
+                notification.style.display = 'block';
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
             fetchCinemas();
         });
     </script>
