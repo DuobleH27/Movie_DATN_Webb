@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Phòng Chiếu</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        body {
+         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -192,6 +192,77 @@
             gap: 10px;
         }
         
+        .custom-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px;
+        }
+
+        .custom-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Modal styles */
+        .custom-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Black background with transparency */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .custom-modal-header,
+        .custom-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .custom-modal-header {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .custom-modal-body {
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .custom-close-btn {
+            background-color: #f66;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .custom-close-btn:hover {
+            background-color: #c44;
+        }
     </style>
 </head>
 <body>
@@ -202,90 +273,102 @@
         <div class="room-form">
             <h3>Thêm Phòng</h3>
             <input type="text" id="roomName" placeholder="Tên phòng">
-            <input type="text" id="roomShape" placeholder="Hình dạng phòng (VD: TTT/DDD/)">
-             <input type="number" id="totalSeat" placeholder="Tổng số ghế">
-             <button class="open-modal-btn">Tạo sơ đồ ghế</button>
-             <div id="modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Sơ đồ ghế</h2>
-                        <button class="close" style=" 
-                        width: 40px;
-                        height: 40px;
-                        cursor: pointer;
-                        font-size: 20px;
-                        background: red;
-                        border: none;">&times;</button>
-                    </div>
-                    <div class="controls">
-                        <input style="width: 100px;" id="rowInput" type="number" placeholder="Số hàng" min="1" />
-                        <input style="width: 100px;" id="colInput" type="number" placeholder="Số cột" min="1" />
-                        <button onclick="generateSeating()">Tạo sơ đồ</button>
-                    </div>
-                    <div class="screen">Màn hình</div>
-                    <div id="seatingArea" class="seat-container"></div>
-                    <button onclick="saveSeats()">Lưu sơ đồ</button>
-                    <p id="output"></p>
-                    <div class="screen">Màn hình</div>
-                    <div id="cinema" class="cinema"></div>
-                    <!-- Chú thích -->
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-box" style="background-color: #6c6;"></div>
-                            <span>Ghế thường (T)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-box" style="background-color: #f90;"></div>
-                            <span>Ghế VIP (V)</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-box" style="background-color: #f66;"></div>
-                            <span>Ghế đôi (D)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-           
+            <input type="number" id="totalSeat" placeholder="Tổng số ghế">
+            <button id="openModalBtn" class="open-modal-btn">Tạo sơ đồ ghế</button>
             <select id="cinemaId">
                 <option value="" disabled selected>Chọn rạp</option>
             </select>
-            <button onclick="addRoom()">Thêm Phòng</button>
+            <button id="addRoomBtn">Thêm Phòng</button>
         </div>
 
         <!-- Danh sách phòng -->
         <div id="roomList"></div>
     </div>
-     
 
+    <!-- Modal tạo sơ đồ ghế -->
+    <div id="seatingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sơ đồ ghế</h2>
+                <button class="close">&times;</button>
+            </div>
+            <div class="controls">
+                <input id="rowInput" type="number" placeholder="Số hàng" min="1" />
+                <input id="colInput" type="number" placeholder="Số cột" min="1" />
+                <button id="generateSeatingBtn">Tạo sơ đồ</button>
+            </div>
+            <div class="screen">Màn hình</div>
+            <div id="seatingArea" class="seat-container"></div>
+            <button id="saveSeatsBtn">Lưu sơ đồ</button>
+            <p id="output"></p>
+            <div class="screen">Màn hình</div>
+            <div id="cinema" class="cinema"></div>
+            <!-- Chú thích -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box" style="background-color: #6c6;"></div>
+                    <span>Ghế thường (T)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background-color: #f90;"></div>
+                    <span>Ghế VIP (V)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background-color: #f66;"></div>
+                    <span>Ghế đôi (D)</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-
-
-
+    <!-- Modal xem sơ đồ ghế -->
+    <div id="viewSeatingModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                Sơ đồ ghế
+                <button class="custom-close-btn">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-screen">Màn hình</div>
+                <div id="viewCinema" class="custom-cinema"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        //customroom
-        //modal1
-        const modal = document.getElementById("modal");
-        const openModalBtn = document.querySelector(".open-modal-btn");
-        const closeModalBtn = document.querySelector(".close");
+        // Các biến toàn cục
+        let seatString = '';
+        let currentRoomId = null;
+
+        // Các elements
+        const seatingModal = document.getElementById("seatingModal");
+        const viewSeatingModal = document.getElementById("viewSeatingModal");
+        const openModalBtn = document.getElementById("openModalBtn");
+        const closeModalBtns = document.querySelectorAll(".close, .custom-close-btn");
         const seatingArea = document.getElementById('seatingArea');
         const output = document.getElementById('output');
+        const generateSeatingBtn = document.getElementById('generateSeatingBtn');
+        const saveSeatsBtn = document.getElementById('saveSeatsBtn');
+        const addRoomBtn = document.getElementById('addRoomBtn');
 
-        // Hiển thị modal
-        openModalBtn.addEventListener("click", () => {
-            modal.style.display = "flex";
+        // Event listeners
+        openModalBtn.addEventListener("click", () => seatingModal.style.display = "flex");
+        closeModalBtns.forEach(btn => btn.addEventListener("click", closeModals));
+        generateSeatingBtn.addEventListener("click", generateSeating);
+        saveSeatsBtn.addEventListener("click", saveSeats);
+        addRoomBtn.addEventListener("click", addRoom);
+
+        window.addEventListener("click", (e) => {
+            if (e.target === seatingModal || e.target === viewSeatingModal) {
+                closeModals();
+            }
         });
 
-        closeModalBtn.addEventListener("click", () => {
-            modal.style.display = "none";
-        });
-
-
-       
-
-
+        // Hàm đóng tất cả các modal
+        function closeModals() {
+            seatingModal.style.display = "none";
+            viewSeatingModal.style.display = "none";
+        }
 
         function generateSeating() {
             const rows = parseInt(document.getElementById('rowInput').value, 10);
@@ -300,8 +383,7 @@
         }
 
         function createSeating(rows, cols) {
-            seatingArea.innerHTML = ""; // Xóa sơ đồ ghế cũ
-
+            seatingArea.innerHTML = "";
             for (let row = 0; row < rows; row++) {
                 const rowContainer = document.createElement('div');
                 rowContainer.style.display = 'flex';
@@ -312,11 +394,10 @@
                     seat.classList.add('seat');
                     seat.dataset.row = row;
                     seat.dataset.col = col;
-                    seat.dataset.status = ''; // Trạng thái ban đầu là trống
-                    seat.textContent = ''; // Hiển thị trống
+                    seat.dataset.status = '';
+                    seat.textContent = '';
 
                     seat.addEventListener('click', () => {
-                        // Chuyển đổi trạng thái giữa '', T, Y, D
                         const currentStatus = seat.dataset.status;
                         const nextStatus = currentStatus === '' ? 'T' : currentStatus === 'T' ? 'V' : currentStatus === 'V' ? 'D' : currentStatus === 'D' ? '/' :currentStatus === '/' ? '_' :'';
                         seat.dataset.status = nextStatus;
@@ -330,56 +411,55 @@
                 seatingArea.appendChild(rowContainer);
             }
         }
-         let seatString = '';
-        function saveSeats() {
-            const seats = document.querySelectorAll('.seat');
-            seats.forEach(seat => {
-                seatString += seat.dataset.status || ''; // Thêm khoảng trắng nếu trạng thái trống
-            });
 
-            output.textContent = `Trạng thái ghế: ${seatString}`;
-            console.log(seatString);
-            renderCinema(seatString);
-        
-        }
-        function renderCinema(layoutString) {
-            const cinemaDiv = document.getElementById("cinema");
+        function saveSeats() {
+    const rows = seatingArea.children; // Lấy tất cả các hàng trong seatingArea
+    let seatString = "";
+
+    Array.from(rows).forEach(row => {
+        const seats = row.querySelectorAll('.seat'); // Lấy tất cả ghế trong hàng
+        seatString += Array.from(seats).map(seat => seat.dataset.status || '_').join('');
+        seatString += '/'; // Thêm ký tự `/` sau mỗi hàng
+    });
+
+    output.textContent = `Trạng thái ghế: ${seatString}`;
+    renderCinema(seatString);
+}
+
+
+        function renderCinema(layoutString, targetElement = "cinema") {
+            const cinemaDiv = document.getElementById(targetElement);
             cinemaDiv.innerHTML = '';
             let rowDiv = document.createElement("div");
             rowDiv.className = "row";
 
-            layoutString.trim().split("").forEach(cell => {
+            layoutString.split("").forEach(cell => {
                 if (cell === "/") {
-                    // Gặp ký tự *, thêm hàng vào giao diện và tạo hàng mới
                     cinemaDiv.appendChild(rowDiv);
                     rowDiv = document.createElement("div");
                     rowDiv.className = "row";
                 } else {
                     const element = document.createElement("div");
-
                     if (cell === "T" || cell === "V" || cell === "D") {
-                        element.className = `seat ${cell}`; // Ghế
-                        element.textContent = cell; // Hiển thị loại ghế
+                        element.className = `seat ${cell}`;
+                        element.textContent = cell;
                     } else if (cell === "_") {
-                        element.className = "aisle"; // Lối đi
+                        element.className = "aisle";
                     }
-
                     rowDiv.appendChild(element);
                 }
             });
 
-            // Thêm hàng cuối cùng (nếu có)
             if (rowDiv.children.length > 0) {
                 cinemaDiv.appendChild(rowDiv);
             }
         }
 
-      
-
-        const fetchCinemas = async () => {
+        async function fetchCinemas() {
             try {
                 const response = await axios.get('https://be-movie-sooty.vercel.app/cinema/getAll');
                 const cinemaSelect = document.getElementById('cinemaId');
+                cinemaSelect.innerHTML = '<option value="" disabled selected>Chọn rạp</option>';
                 response.data.forEach(cinema => {
                     const option = document.createElement('option');
                     option.value = cinema._id;
@@ -389,41 +469,75 @@
             } catch (error) {
                 console.error('Lỗi khi lấy danh sách rạp:', error);
             }
-        };
+        }
 
-        const fetchRooms = async () => {
-            try {
-                const response = await axios.get('https://be-movie-sooty.vercel.app/room/getAll');
-                const roomList = document.getElementById('roomList');
-                roomList.innerHTML = ''; // Xóa danh sách cũ
-                response.data.forEach(room => {
-                    const roomItem = document.createElement('div');
-                    roomItem.className = 'room-item';
-                    roomItem.innerHTML = `
-                        <h4>${room.name}</h4>
-                        <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
-                        <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
-                        <p><strong>ID Rạp:</strong> ${room.cinemaId}</p>
-                        <div class="actions ">
-                            <button class="edit-btn" onclick="editRoom('${room._id}', '${room.name}', '${room.roomShape}', ${room.totalSeat}, '${room.cinemaId}')">Sửa</button>
-                            <button class="delete-btn" onclick="deleteRoom('${room._id}')">Xóa</button>
-                             <button class="custom-btn" id="custom-open-modal">Xem Sơ đồ ghế</button>
-                        </div>
-                    `;
-                    roomList.appendChild(roomItem);
-                });
-            } catch (error) {
-                console.error('Lỗi khi lấy danh sách phòng:', error);
-            }
-        };
 
-        const addRoom = async () => {
+        //
+        async function fetchRoomsWithCinema() {
+  try {
+    // Lấy danh sách phòng
+    const roomResponse = await axios.get('https://be-movie-sooty.vercel.app/room/getAll');
+    const rooms = roomResponse.data; // Danh sách phòng
+
+    const roomList = document.getElementById('roomList');
+    roomList.innerHTML = ''; // Xóa nội dung cũ
+
+    for (const room of rooms) {
+      try {
+        // Gọi API lấy thông tin rạp theo cinemaId của phòng
+        const theaterResponse = await fetch(`http://be-movie-sooty.vercel.app/cinema/getById?_id=${room.cinemaId}`);
+        if (!theaterResponse.ok) throw new Error(`Không tìm thấy thông tin rạp cho cinemaId: ${room.cinemaId}`);
+        
+        const theater = await theaterResponse.json(); // Lấy thông tin rạp
+
+        // Tạo phần tử HTML cho mỗi phòng
+        const roomItem = document.createElement('div');
+        roomItem.className = 'room-item';
+        roomItem.innerHTML = `
+          <h4>${room.name}</h4>
+          <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
+          <p><strong>Tên Rạp:</strong> ${theater.name}</p>
+          <div class="actions">
+            <button class="edit-btn" onclick="editRoom('${room._id}', '${room.name}', '${room.roomShape}', ${room.totalSeat}, '${room.cinemaId}')">Sửa</button>
+            <button class="delete-btn" onclick="deleteRoom('${room._id}')">Xóa</button>
+            <button class="custom-btn" onclick="viewSeatingChart('${room.roomShape}')">Xem Sơ đồ ghế</button>
+          </div>
+        `;
+        roomList.appendChild(roomItem);
+      } catch (error) {
+        console.error(`Lỗi khi lấy thông tin rạp cho phòng ${room.name}:`, error);
+        // Hiển thị phòng ngay cả khi không tìm thấy thông tin rạp
+        const roomItem = document.createElement('div');
+        roomItem.className = 'room-item';
+        roomItem.innerHTML = `
+          <h4>${room.name}</h4>
+          <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
+          <p><strong>Tên Rạp:</strong> Không tìm thấy</p>
+          <div class="actions">
+            <button class="edit-btn" onclick="editRoom('${room._id}', '${room.name}', '${room.roomShape}', ${room.totalSeat}, '${room.cinemaId}')">Sửa</button>
+            <button class="delete-btn" onclick="deleteRoom('${room._id}')">Xóa</button>
+            <button class="custom-btn" onclick="viewSeatingChart('${room.roomShape}')">Xem Sơ đồ ghế</button>
+          </div>
+        `;
+        roomList.appendChild(roomItem);
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách phòng:', error);
+    alert('Đã xảy ra lỗi khi tải danh sách phòng!');
+  }
+}
+
+// Gọi hàm
+fetchRoomsWithCinema();
+
+
+        async function addRoom() {
             const roomName = document.getElementById('roomName').value;
-            // const roomShape = document.getElementById('roomShape').value;
             const totalSeat = document.getElementById('totalSeat').value;
             const cinemaId = document.getElementById('cinemaId').value;
 
-            if (!roomName || !roomShape || !totalSeat || !cinemaId) {
+            if (!roomName || !seatString || !totalSeat || !cinemaId) {
                 alert('Vui lòng nhập đầy đủ thông tin!');
                 return;
             }
@@ -436,15 +550,15 @@
                     cinemaId: cinemaId
                 });
                 alert('Thêm phòng thành công!');
-                console.log(cinemaId)
                 fetchRooms();
+                resetForm();
             } catch (error) {
                 console.error('Lỗi khi thêm phòng:', error);
                 alert('Thêm phòng thất bại!');
             }
-        };
+        }
 
-        const deleteRoom = async (roomId) => {
+        async function deleteRoom(roomId) {
             if (!confirm('Bạn có chắc chắn muốn xóa phòng này?')) return;
 
             try {
@@ -455,45 +569,62 @@
                 console.error('Lỗi khi xóa phòng:', error);
                 alert('Xóa phòng thất bại!');
             }
-        };
+        }
 
-        const editRoom = (roomId, name, shape, seats, cinemaId) => {
+        function editRoom(roomId, name, shape, seats, cinemaId) {
             document.getElementById('roomName').value = name;
-            document.getElementById('roomShape').value = shape;
             document.getElementById('totalSeat').value = seats;
             document.getElementById('cinemaId').value = cinemaId;
-            document.querySelector('.room-form button').onclick = () => updateRoom(roomId);
-        };
+            seatString = shape;
+            currentRoomId = roomId;
+            addRoomBtn.textContent = 'Cập nhật Phòng';
+            addRoomBtn.onclick = updateRoom;
+            renderCinema(shape);
+        }
 
-        const updateRoom = async (roomId) => {
+        async function updateRoom() {
             const roomName = document.getElementById('roomName').value;
-            const roomShape = document.getElementById('roomShape').value;
             const totalSeat = document.getElementById('totalSeat').value;
-            const cinema_id = document.getElementById('cinemaId').value;
+            const cinemaId = document.getElementById('cinemaId').value;
 
-            if (!roomName || !roomShape || !totalSeat || !cinemaId) {
+            if (!roomName || !seatString || !totalSeat || !cinemaId) {
                 alert('Vui lòng nhập đầy đủ thông tin!');
                 return;
             }
 
             try {
                 await axios.post('https://be-movie-sooty.vercel.app/room/update', {
-                    _id: roomId,
+                    _id: currentRoomId,
                     name: roomName,
-                    roomShape: roomShape,
+                    roomShape: seatString,
                     totalSeat: parseInt(totalSeat),
-                    cinemaId: cinema_id
+                    cinemaId: cinemaId
                 });
                 alert('Cập nhật phòng thành công!');
                 fetchRooms();
-                document.querySelector('.room-form button').onclick = addRoom;
+                resetForm();
             } catch (error) {
                 console.error('Lỗi khi cập nhật phòng:', error);
                 alert('Cập nhật phòng thất bại!');
             }
-        };
+        }
 
-        // Tải dữ liệu khi trang được mở
+        function viewSeatingChart(roomShape) {
+            renderCinema(roomShape, "viewCinema");
+            viewSeatingModal.style.display = "flex";
+        }
+
+        function resetForm() {
+            document.getElementById('roomName').value = '';
+            document.getElementById('totalSeat').value = '';
+            document.getElementById('cinemaId').value = '';
+            seatString = '';
+            currentRoomId = null;
+            addRoomBtn.textContent = 'Thêm Phòng';
+            addRoomBtn.onclick = addRoom;
+        }
+
+        // Khởi tạo dữ liệu
         fetchCinemas();
         fetchRooms();
     </script>
