@@ -22584,13 +22584,15 @@ html {
 
 .container-scroller {
   width: 100%;
+  overflow-x: auto;
   overflow: hidden;
+  padding: 0px;
 }
 
 pre {
   background: color(gray-lighter);
-  padding: 15px;
   font-size: 14px;
+
 }
 
 code {

@@ -716,45 +716,16 @@
         defaultTab.classList.add("active");
     }
 });
+window.addEventListener('load', function() {
+    var iframes = document.getElementsByTagName('iframe');
+    for (var i = 0; i < iframes.length; i++) {
+        iframes[i].onload = function() {
+            this.contentWindow.scrollTo(0, 0);
+        }
+    }
+});
 
-      // document.addEventListener("DOMContentLoaded", function () {
-
-      //   fetch('https://be-movie-sooty.vercel.app/movie/getAll', {
-      //     headers: {
-      //       "Authorization": `Bearer ${localStorage.getItem('token')}`
-      //     }
-      //   })
-      //     .then(response => {
-      //       if (!response.ok) {
-      //         throw new Error('Network response was not ok');
-      //       }
-      //       return response.json();
-      //     })
-      //     .then(data => {
-      //       console.log(data); // Kiểm tra dữ liệu trả về từ API
-
-      //       data.forEach((movie) => {
-      //         movieContainer.insertAdjacentHTML('beforeend', `
-      //                   <div class="col-md-4">
-      //                       <div class="card movie-card">
-      //                           <img src="${movie.images[0] || 'https://via.placeholder.com/150'}" class="card-img-top movie-img" alt="${movie.name}">
-      //                           <div class="card-body">
-      //                               <h5 class="movie-title">${movie.name}</h5>
-      //                               <p class="movie-description">${movie.description || 'N/A'}</p>
-      //                               <p><strong>Duration:</strong> ${movie.duration}</p>
-      //                               <p><strong>Release Date:</strong> ${new Date(movie.release_date).toLocaleDateString()}</p>
-      //                               <p><strong>Rating:</strong> ${movie.rating || 'N/A'}</p>
-                                    
-      //                           </div>
-      //                       </div>
-      //                   </div>
-      //               `);
-      //       });
-      //     })
-      //     .catch(error => {
-      //       console.error('Error fetching movies:', error);
-      //     });
-      // });
+     
     </script>
 
 </body>
