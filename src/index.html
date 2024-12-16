@@ -472,132 +472,113 @@
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
+          <!-- Dashboard -->
           <li class="nav-item">
             <a class="nav-link active" onclick="openTab(event, 'tab_Dashbroad')">
               <i class="mdi mdi-grid-large menu-icon"></i>
-              <span class="menu-title" >Dashboard</span>
+              <span class="menu-title">Dashboard</span>
             </a>
           </li>
+          
+          <!-- Quản lý Rạp -->
           <li class="nav-item nav-category">Quản lý Rạp</li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#theater" aria-expanded="false" aria-controls="theater">
-              <i class="menu-icon mdi mdi-theater"></i>
+            <a class="nav-link" data-bs-toggle="collapse" href="#theater1" aria-expanded="false" aria-controls="theater1">
+              <i class="mdi mdi-theater menu-icon"></i>
               <span class="menu-title">Rạp</span>
               <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="theater">
+            <div class="collapse" id="theater1">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_Cinema')" >Danh sách Rạp</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_Cinema')">Danh sách Rạp</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_ListCinemaDeleta')">Danh sách Rạp đã xóa</a></li>
               </ul>
             </div>
-            <div class="collapse" id="theater">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_ListCinemaDeleta')" >Danh sách Rạp đã xóa </a></li>
-              </ul>
-            </div>
-           
-           
           </li>
+    
+          <!-- Quản lý Phòng chiếu -->
           <li class="nav-item nav-category">Quản lý Phòng chiếu</li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#theater" aria-expanded="false" aria-controls="theater">
-              <i class="menu-icon mdi mdi-theater"></i>
+            <a class="nav-link" data-bs-toggle="collapse" href="#room" aria-expanded="false" aria-controls="room">
+              <i class="mdi mdi-chair-school menu-icon"></i>
               <span class="menu-title">Phòng chiếu và ghế</span>
               <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="theater">
+            <div class="collapse" id="room">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_EditRoom')" >Phòng chiếu</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_EditRoom')">Phòng chiếu</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_ReRoom')">Phòng chiếu đã xóa</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_EditTypeSeat')">Quản lí ghế</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_ReTypeSeat')">Loại ghế đã xóa</a></li>
               </ul>
             </div>
-            <div class="collapse" id="theater">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_ReRoom')" >Phòng chiếu đã xóa</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="theater">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_EditTypeSeat')" >Quản lí ghế</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="theater">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_ReTypeSeat')" >Loại ghế đã xóa</a></li>
-              </ul>
-            </div>
-           
           </li>
+    
+          <!-- Quản lý Người dùng -->
           <li class="nav-item nav-category">Quản lý Người dùng</li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#user" aria-expanded="false" aria-controls="user">
-              <i class="menu-icon mdi mdi-account"></i>
+              <i class="mdi mdi-account menu-icon"></i>
               <span class="menu-title">Người dùng</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="user">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_User')">Danh sách Người dùng</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_User')">Danh sách Người dùng</a></li>
               </ul>
             </div>
           </li>
+    
+          <!-- Quản lý Phim -->
           <li class="nav-item nav-category">Quản lý Phim</li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#movie" aria-expanded="false" aria-controls="movie">
-              <i class="menu-icon mdi mdi-film"></i>
+              <i class="mdi mdi-film menu-icon"></i>
               <span class="menu-title">Phim</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="movie">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Movie')" >Danh sách Phim</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="movie">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_Gener')" >Thể loại</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="movie">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_deleteshow')" >Thể loại đã xóa</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="movie">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link"onclick="openTab(event, 'tab_MovieFalse')" >Danh sách Phim đã xóa</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_Movie')">Danh sách Phim</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_Gener')">Thể loại</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_deleteshow')">Thể loại đã xóa</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_MovieFalse')">Danh sách Phim đã xóa</a></li>
               </ul>
             </div>
           </li>
+    
+          <!-- Quản lý Thương hiệu -->
           <li class="nav-item nav-category">Quản lý Thương hiệu</li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#brand" aria-expanded="false" aria-controls="brand">
-              <i class="menu-icon mdi mdi-label"></i>
+              <i class="mdi mdi-label menu-icon"></i>
               <span class="menu-title">Thương hiệu</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="brand">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" onclick="openTab(event, 'tab_Brand')">Danh sách Thương hiệu</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_Brand')">Danh sách Thương hiệu</a></li>
               </ul>
             </div>
           </li>
+    
+          <!-- Lịch chiếu -->
           <li class="nav-item nav-category">Lịch chiếu</li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#showtime" aria-expanded="false"
-              aria-controls="showtime">
-              <i class="menu-icon mdi mdi-calendar"></i>
+            <a class="nav-link" data-bs-toggle="collapse" href="#showtime" aria-expanded="false" aria-controls="showtime">
+              <i class="mdi mdi-calendar menu-icon"></i>
               <span class="menu-title">Lịch chiếu</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="showtime">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link"  onclick="openTab(event, 'tab_Listshowtimemovie')">Danh sách Lịch chiếu</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" onclick="openTab(event, 'tab_Listshowtimemovie')">Danh sách Lịch chiếu</a></li>
               </ul>
             </div>
           </li>
         </ul>
       </nav>
+    
 
       <!-- partial -->
       <div class="container-scroller">
@@ -725,6 +706,28 @@ window.addEventListener('load', function() {
     }
 });
 
+
+  // Script để đóng các collapse khác khi mở một mục
+  document.addEventListener("DOMContentLoaded", function () {
+      const navLinks = document.querySelectorAll('[data-bs-toggle="collapse"]'); // Chọn các link có data-bs-toggle
+
+      navLinks.forEach(link => {
+        link.addEventListener("click", function () {
+          const targetId = link.getAttribute("href"); // Lấy ID mục collapse được click
+
+          // Đóng tất cả các mục collapse khác
+          navLinks.forEach(otherLink => {
+            const otherId = otherLink.getAttribute("href");
+            if (otherId !== targetId) {
+              const otherCollapse = document.querySelector(otherId);
+              if (otherCollapse && otherCollapse.classList.contains("show")) {
+                bootstrap.Collapse.getInstance(otherCollapse).hide();
+              }
+            }
+          });
+        });
+      });
+    });
      
     </script>
 

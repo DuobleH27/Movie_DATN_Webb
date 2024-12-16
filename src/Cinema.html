@@ -358,13 +358,17 @@
     }
 }
 let editingCinemaId = null; // Biến lưu ID rạp chiếu phim đang chỉnh sửa
-
 function editCinema(cinemaId, currentName, currentAddress) {
-    editingCinemaId = cinemaId; // Lưu lại ID rạp chiếu phim
-    document.getElementById("cinemaName").value = currentName;
-    document.getElementById("cinemaAddress").value = currentAddress;
+    editingCinemaId = cinemaId; // Lưu lại ID rạp đang chỉnh sửa
+    
+    // Hiển thị thông tin cũ trong các input của modal
+    document.getElementById("cinemaNameu").value = currentName;  // Input sửa tên
+    document.getElementById("cinemaAddressu").value = currentAddress; // Input sửa địa chỉ
+    
+    // Hiển thị modal sửa rạp
     document.getElementById("editCinemaModal").style.display = "block";
 }
+
 
 function closeModal() {
     document.getElementById("editCinemaModal").style.display = "none";

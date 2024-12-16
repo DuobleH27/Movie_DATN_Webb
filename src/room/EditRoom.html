@@ -415,7 +415,7 @@
 
         function saveSeats() {
     const rows = seatingArea.children; // Lấy tất cả các hàng trong seatingArea
-    let seatString = "";
+    seatString = ""; // Cập nhật biến toàn cục seatString
 
     Array.from(rows).forEach(row => {
         const seats = row.querySelectorAll('.seat'); // Lấy tất cả ghế trong hàng
@@ -550,10 +550,12 @@ fetchRoomsWithCinema();
                     totalSeat: parseInt(totalSeat),
                     cinemaId: cinemaId
                 });
+                console.log( seatString, roomName,totalSeat,cinemaId);
                 alert('Thêm phòng thành công!');
-                fetchRooms();
+                fetchRoomsWithCinema()
                 resetForm();
             } catch (error) {
+                console.log( seatString, roomName,totalSeat,cinemaId);
                 console.error('Lỗi khi thêm phòng:', error);
                 alert('Thêm phòng thất bại!');
             }
@@ -602,7 +604,7 @@ fetchRoomsWithCinema();
                     cinemaId: cinemaId
                 });
                 alert('Cập nhật phòng thành công!');
-                fetchRooms();
+                fetchRoomsWithCinema()
                 resetForm();
             } catch (error) {
                 console.error('Lỗi khi cập nhật phòng:', error);
@@ -627,7 +629,7 @@ fetchRoomsWithCinema();
 
         // Khởi tạo dữ liệu
         fetchCinemas();
-        fetchRooms();
+        fetchRoomsWithCinema()
     </script>
 </body>
 </html>
