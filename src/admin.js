@@ -1,5 +1,11 @@
 async function postJSON(username, password) {
     try {
+        // Kiểm tra input có rỗng không
+        if (!username || !password) {
+            alert("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.");
+            return;
+        }
+
         const body = { username, password };
         const response = await fetch("https://be-movie-sooty.vercel.app/admin/login", {
             method: "POST",
@@ -10,27 +16,26 @@ async function postJSON(username, password) {
         });
 
         const result = await response.json();
-        console.log("Success:", result);
 
-        // Kiểm tra xem API có trả về token không
-        if (result && result.token) {
-            // Lưu token vào localStorage để sử dụng sau
+        // Xử lý kết quả từ API
+        if (response.ok && result.token) {
             localStorage.setItem('token', result.token);
-
-            // Chuyển hướng đến trang index.html
+            alert("Đăng nhập thành công!");
             window.location.href = "index.html";
         } else {
-            console.error("Login failed: ", result.message || "Invalid credentials");
+            // Alert lỗi nếu mật khẩu hoặc tài khoản không chính xác
+            alert(result.message || "Tên đăng nhập hoặc mật khẩu không chính xác.");
         }
     } catch (error) {
+        // Alert khi có lỗi không mong muốn từ server
+        alert("Đã có lỗi xảy ra, vui lòng thử lại sau.");
         console.error("Error:", error);
     }
 }
 
-// Lắng nghe sự kiện click vào nút đăng nhập
+// Thêm sự kiện click vào nút đăng nhập
 document.querySelector('.btn-primary').addEventListener('click', () => {
-    console.log('click');
-    const username = document.getElementById('exampleInputEmail1').value;
-    const password = document.getElementById('exampleInputPassword1').value;
+    const username = document.getElementById('exampleInputEmail1').value.trim();
+    const password = document.getElementById('exampleInputPassword1').value.trim();
     postJSON(username, password);
 });
