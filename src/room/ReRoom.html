@@ -68,26 +68,39 @@
     <script>
         // Lấy danh sách phòng đã xóa
         const fetchDeletedRooms = async () => {
-            try {
-                const response = await axios.get('https://be-movie-sooty.vercel.app/room/getDelete');
-                const roomList = document.getElementById('deletedRoomList');
-                roomList.innerHTML = ''; // Xóa danh sách cũ
-                response.data.forEach(room => {
-                    const roomItem = document.createElement('div');
-                    roomItem.className = 'room-item';
-                    roomItem.innerHTML = `
-                        <h4>${room.name}</h4>
-                        <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
-                        <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
-                        <p><strong>ID Phòng:</strong> ${room._id}</p>
-                        <button onclick="revertRoom('${room._id}')">Khôi Phục</button>
-                    `;
-                    roomList.appendChild(roomItem);
-                });
-            } catch (error) {
-                console.error('Lỗi khi lấy danh sách phòng đã xóa:', error);
-            }
-        };
+    try {
+        // Gọi API lấy danh sách phòng đã xóa và danh sách rạp
+        const [deletedRoomsResponse, cinemasResponse] = await Promise.all([
+            axios.get('https://be-movie-sooty.vercel.app/room/getDelete'),
+            axios.get('https://be-movie-sooty.vercel.app/cinema/getAll')
+        ]);
+
+        const deletedRooms = deletedRoomsResponse.data; // Danh sách phòng đã xóa
+        const cinemas = cinemasResponse.data; // Danh sách rạp chiếu phim
+
+        const roomList = document.getElementById('deletedRoomList');
+        roomList.innerHTML = ''; // Xóa danh sách cũ
+
+        // Duyệt qua danh sách phòng đã xóa và thêm tên rạp
+        deletedRooms.forEach(room => {
+            const cinema = cinemas.find(c => c._id === room.cinemaId); // Tìm rạp dựa trên cinemaId
+            const cinemaName = cinema ? cinema.name : "Không xác định";
+
+            const roomItem = document.createElement('div');
+            roomItem.className = 'room-item';
+            roomItem.innerHTML = `
+                <h4>${room.name} (${cinemaName})</h4>
+                <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
+                <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
+                <p><strong>ID Phòng:</strong> ${room._id}</p>
+                <button onclick="revertRoom('${room._id}')">Khôi Phục</button>
+            `;
+            roomList.appendChild(roomItem);
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu:', error);
+    }
+};
 
         // Khôi phục phòng đã xóa
         const revertRoom = async (roomId) => {
