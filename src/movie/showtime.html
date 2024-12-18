@@ -27,6 +27,7 @@
         }
 
         h1 {
+            color: #e63946;
             text-align: center;
             margin-bottom: 20px;
         }
@@ -392,14 +393,14 @@
                     showtimeItem.className = 'showtime-item';
                     showtimeItem.innerHTML = `
                 <div class="showtime-details">
-                    <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
+                    
                     <span><strong>Phim:</strong> ${movieName}</span>
                     <span><strong>Phòng:</strong> ${roomName}</span>
                     
                     <span><strong>Thời gian bắt đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
                     <span><strong>Thời gian kết thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
                     <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
-                    <span><strong>Hình dạng phòng:</strong> ${showtime.Room_Shape}</span>
+                   
                 </div>
             `;      console.log(showtime.roomId);
                     

@@ -400,7 +400,7 @@
 
                     seat.addEventListener('click', () => {
                         const currentStatus = seat.dataset.status;
-                        const nextStatus = currentStatus === '' ? 'T' : currentStatus === 'T' ? 'V' : currentStatus === 'V' ? 'D' : currentStatus === 'D' ? '_' :'';
+                        const nextStatus = currentStatus === '' ? 'T' : currentStatus === 'T' ? 'V' : currentStatus === 'V' ? 'D' :'';
                         seat.dataset.status = nextStatus;
                         seat.textContent = nextStatus;
                         seat.className = `seat ${nextStatus}`;

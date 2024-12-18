@@ -91,8 +91,6 @@
             roomItem.innerHTML = `
                 <h4>${room.name} (${cinemaName})</h4>
                 <p><strong>Số ghế:</strong> ${room.totalSeat}</p>
-                <p><strong>Hình dạng:</strong> ${room.roomShape}</p>
-                <p><strong>ID Phòng:</strong> ${room._id}</p>
                 <button onclick="revertRoom('${room._id}')">Khôi Phục</button>
             `;
             roomList.appendChild(roomItem);
