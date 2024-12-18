@@ -27,7 +27,6 @@
         }
 
         h1 {
-            color: #e63946;
             text-align: center;
             margin-bottom: 20px;
         }
@@ -75,16 +74,14 @@
             background-color: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
-            z-index: 1200;
-            overflow-y: auto;
+            z-index: 1000;
         }
 
         .modal-content {
-            margin-top: 50px;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
-            width: 100%;
+            width: 90%;
             max-width: 500px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             position: relative;
@@ -200,6 +197,21 @@
         let movies = [];
         let cinemas = [];
         let rooms = [];
+        
+        fetch('http://be-movie-sooty.vercel.app/room/getAll')
+    .then(response => response.json())
+    .then(data => {
+        rooms = data; // Gán dữ liệu rooms
+        console.log('Rooms đã load:', rooms);
+
+        // Tiếp tục xử lý showtimes
+        filteredShowtimes.forEach(showtime => {
+            const room = rooms.find(room => room._id === showtime.roomId);
+            const roomName = room?.name || 'Không rõ';
+            console.log('Room Name:', roomName);
+        });
+    })
+    .catch(error => console.error('Lỗi khi tải rooms:', error));
 
         // Đặt ngày hiện tại làm giá trị tối thiểu cho ngày được chọn
         const dayInput = document.getElementById('day');
@@ -315,7 +327,7 @@
         };
 
 
-
+       
 
 
         const fetchRoomsByCinema = async (cinemaId) => {
@@ -371,7 +383,10 @@
                 // Hiển thị danh sách showtime phù hợp
                 filteredShowtimes.forEach(showtime => {
                     const movieName = movies.find(movie => movie._id === showtime.movieId)?.name || 'Không rõ';
+                    
                     const roomName = rooms.find(room => room._id === showtime.roomId)?.name || 'Không rõ';
+                    
+                    
 
                     const showtimeItem = document.createElement('div');
                     showtimeItem.className = 'showtime-item';
@@ -380,12 +395,14 @@
                     <span><strong>ID Suất Chiếu:</strong> ${showtime._id}</span>
                     <span><strong>Phim:</strong> ${movieName}</span>
                     <span><strong>Phòng:</strong> ${roomName}</span>
+                    
                     <span><strong>Thời gian bắt đầu:</strong> ${new Date(showtime.startTime).toLocaleString()}</span>
                     <span><strong>Thời gian kết thúc:</strong> ${new Date(showtime.endTime).toLocaleString()}</span>
                     <span><strong>Ngày:</strong> ${new Date(showtime.day).toLocaleDateString()}</span>
-                    <span><strong>Hình dạng phòng:</strong> ${showtime.Room_Shape || 'Không rõ'}</span>
+                    <span><strong>Hình dạng phòng:</strong> ${showtime.Room_Shape}</span>
                 </div>
-            `;
+            `;      console.log(showtime.roomId);
+                    
                     showtimeList.appendChild(showtimeItem);
                 });
             } catch (error) {

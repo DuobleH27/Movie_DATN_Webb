@@ -145,7 +145,7 @@
         }
 
         .seat.T { background-color: #6c6; color: #fff; } /* Ghế thường */
-        .seat.Y { background-color: #f90; color: #fff; } /* Ghế VIP */
+        .seat.V { background-color: #f90; color: #fff; } /* Ghế VIP */
         .seat.D { background-color: #f66; color: #fff; } /* Ghế đôi */
 
         .legend {
@@ -274,7 +274,7 @@
         <div class="room-form">
             <h3>Thêm Phòng</h3>
             <input type="text" id="roomName" placeholder="Tên phòng">
-            <input type="number" id="totalSeat" placeholder="Tổng số ghế">
+            <!-- <input type="number" id="totalSeat" placeholder="Tổng số ghế"> -->
             <button id="openModalBtn" class="open-modal-btn">Tạo sơ đồ ghế</button>
             <select id="cinemaId">
                 <option value="" disabled selected>Chọn rạp</option>
@@ -400,7 +400,7 @@
 
                     seat.addEventListener('click', () => {
                         const currentStatus = seat.dataset.status;
-                        const nextStatus = currentStatus === '' ? 'T' : currentStatus === 'T' ? 'V' : currentStatus === 'V' ? 'D' : currentStatus === 'D' ? '/' :currentStatus === '/' ? '_' :'';
+                        const nextStatus = currentStatus === '' ? 'T' : currentStatus === 'T' ? 'V' : currentStatus === 'V' ? 'D' : currentStatus === 'D' ? '_' :'';
                         seat.dataset.status = nextStatus;
                         seat.textContent = nextStatus;
                         seat.className = `seat ${nextStatus}`;
@@ -414,17 +414,35 @@
         }
 
         function saveSeats() {
-    const rows = seatingArea.children; // Lấy tất cả các hàng trong seatingArea
-    seatString = ""; // Cập nhật biến toàn cục seatString
+    const rows = seatingArea.children; // lấy tất cả các hàng trong seatingArea
+    seatString = ""; // cập nhật biến toàn cục seatString
 
     Array.from(rows).forEach(row => {
-        const seats = row.querySelectorAll('.seat'); // Lấy tất cả ghế trong hàng
+        const seats = row.querySelectorAll('.seat'); // lấy tất cả ghế trong hàng
         seatString += Array.from(seats).map(seat => seat.dataset.status || '_').join('');
-        seatString += '/'; // Thêm ký tự `/` sau mỗi hàng
+        seatString += '/'; // thêm ký tự `/` sau mỗi hàng
     });
 
-    output.textContent = `Trạng thái ghế: ${seatString}`;
+    // output.textContent = `Trạng thái ghế: ${seatString}`;
     renderCinema(seatString);
+
+      // tính tổng số ghế
+      const totalSeats = calculateTotalSeats(seatString);
+    output.textContent += `\nTổng số ghế: ${totalSeats}`;
+}
+// hàm tính tổng số ghế
+function calculateTotalSeats(seatString) {
+    const seats = seatString.split('');
+    let totalSeats = 0;
+
+    // đếm số lượng ký tự 'T', 'V', 'D'
+    seats.forEach(char => {
+        if (char === 'T' || char === 'V' || char === 'D') {
+            totalSeats++;
+        }
+    });
+
+    return totalSeats;
 }
 
 
@@ -535,27 +553,28 @@ fetchRoomsWithCinema();
 
         async function addRoom() {
             const roomName = document.getElementById('roomName').value;
-            const totalSeat = document.getElementById('totalSeat').value;
+            // const totalSeat = document.getElementById('totalSeat').value;
             const cinemaId = document.getElementById('cinemaId').value;
 
-            if (!roomName || !seatString || !totalSeat || !cinemaId) {
+            if (!roomName || !seatString ||!cinemaId) {
                 alert('Vui lòng nhập đầy đủ thông tin!');
                 return;
             }
+             // Tính tổng số ghế từ seatString
+            const totalSeats = calculateTotalSeats(seatString);
 
             try {
                 await axios.post('https://be-movie-sooty.vercel.app/room/add', {
                     name: roomName,
                     roomShape: seatString,
-                    totalSeat: parseInt(totalSeat),
+                    totalSeat: parseInt(totalSeats),
                     cinemaId: cinemaId
                 });
-                console.log( seatString, roomName,totalSeat,cinemaId);
+            
                 alert('Thêm phòng thành công!');
                 fetchRoomsWithCinema()
                 resetForm();
             } catch (error) {
-                console.log( seatString, roomName,totalSeat,cinemaId);
                 console.error('Lỗi khi thêm phòng:', error);
                 alert('Thêm phòng thất bại!');
             }
@@ -567,7 +586,7 @@ fetchRoomsWithCinema();
             try {
                 await axios.post('https://be-movie-sooty.vercel.app/room/delete', { _id: roomId });
                 alert('Xóa phòng thành công!');
-                fetchRooms();
+                fetchRoomsWithCinema()
             } catch (error) {
                 console.error('Lỗi khi xóa phòng:', error);
                 alert('Xóa phòng thất bại!');
@@ -575,51 +594,64 @@ fetchRoomsWithCinema();
         }
 
         function editRoom(roomId, name, shape, seats, cinemaId) {
-            document.getElementById('roomName').value = name;
-            document.getElementById('totalSeat').value = seats;
-            document.getElementById('cinemaId').value = cinemaId;
-            seatString = shape;
-            currentRoomId = roomId;
-            addRoomBtn.textContent = 'Cập nhật Phòng';
-            addRoomBtn.onclick = updateRoom;
-            renderCinema(shape);
-        }
+    // Gán dữ liệu lên form
+    document.getElementById('roomName').value = name;
+    document.getElementById('cinemaId').value = cinemaId;
+    seatString = shape;
+    currentRoomId = roomId;
 
-        async function updateRoom() {
-            const roomName = document.getElementById('roomName').value;
-            const totalSeat = document.getElementById('totalSeat').value;
-            const cinemaId = document.getElementById('cinemaId').value;
+    // Cập nhật giao diện nút
+    addRoomBtn.textContent = 'Cập nhật Phòng';
 
-            if (!roomName || !seatString || !totalSeat || !cinemaId) {
-                alert('Vui lòng nhập đầy đủ thông tin!');
-                return;
-            }
+    // Xóa sự kiện cũ để tránh trùng lặp
+    addRoomBtn.removeEventListener('click', addRoom);
+    addRoomBtn.removeEventListener('click', updateRoom);
 
-            try {
-                await axios.post('https://be-movie-sooty.vercel.app/room/update', {
-                    _id: currentRoomId,
-                    name: roomName,
-                    roomShape: seatString,
-                    totalSeat: parseInt(totalSeat),
-                    cinemaId: cinemaId
-                });
-                alert('Cập nhật phòng thành công!');
-                fetchRoomsWithCinema()
-                resetForm();
-            } catch (error) {
-                console.error('Lỗi khi cập nhật phòng:', error);
-                alert('Cập nhật phòng thất bại!');
-            }
-        }
+    // Gắn sự kiện mới cho nút "Cập nhật Phòng"
+    addRoomBtn.addEventListener('click', updateRoom);
+
+    // Render sơ đồ ghế hiện tại
+    renderCinema(shape);
+}
+
+
+async function updateRoom() {
+    const roomName = document.getElementById('roomName').value;
+    const cinemaId = document.getElementById('cinemaId').value;
+
+    if (!roomName || !seatString || !cinemaId) {
+        alert('Vui lòng nhập đầy đủ thông tin!');
+        return;
+    }
+
+    // Tính tổng số ghế từ seatString
+    const totalSeats = calculateTotalSeats(seatString);
+
+    try {
+        await axios.post('https://be-movie-sooty.vercel.app/room/update', {
+            _id: currentRoomId,
+            name: roomName,
+            roomShape: seatString,
+            totalSeat: totalSeats,
+            cinemaId: cinemaId
+        });
+        alert('Cập nhật phòng thành công!');
+        fetchRoomsWithCinema(); // Làm mới danh sách phòng
+        resetForm();
+    } catch (error) {
+        console.error('Lỗi khi cập nhật phòng:', error);
+        alert('Cập nhật phòng thất bại!');
+    }
+}
+
 
         function viewSeatingChart(roomShape) {
             renderCinema(roomShape, "viewCinema");
             viewSeatingModal.style.display = "flex";
         }
 
-        function resetForm() {
+        function resetForm() {  
             document.getElementById('roomName').value = '';
-            document.getElementById('totalSeat').value = '';
             document.getElementById('cinemaId').value = '';
             seatString = '';
             currentRoomId = null;

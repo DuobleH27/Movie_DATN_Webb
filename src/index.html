@@ -125,6 +125,11 @@
             <img src="assets/images/logo.svg" alt="logo" />
           </li>
         </ul>
+        <ul class="navbar-nav" style="margin-left: 900px; ">
+          <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
+            <button id="logoutBtn" style="color:white; background-color: #e63946; justify-content: center; align-items: center;" ><h4 style="margin-top: 10px;">Đăng Xuất</h4></button>
+           </li>
+        </ul>
         <!-- <ul class="navbar-nav ms-auto">
           <li class="nav-item dropdown d-none d-lg-block">
             <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#"
@@ -728,6 +733,26 @@ window.addEventListener('load', function() {
         });
       });
     });
+
+ // Hàm Logout
+document.getElementById("logoutBtn").addEventListener("click", function () {
+    localStorage.removeItem("isLoggedIn"); // Xóa trạng thái đăng nhập
+    window.location.href = "login.html"; // Chuyển về trang login
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        // Nếu không có token trong localStorage, chuyển về trang login
+        window.location.href = "login.html";
+    }
+
+    // Chặn lịch sử quay lại trang index
+    history.replaceState(null, null, window.location.href);
+});
+
+
      
     </script>
 
